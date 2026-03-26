@@ -186,8 +186,8 @@ export default function AuthScreen() {
         badges: [],
       });
 
-      // Navigate to Home
-      navigation.navigate('Home');
+      // Navigate to MainTabs
+      (navigation as any).navigate('MainTabs');
     } catch (error: any) {
       console.error('Signup error:', error);
       setFirebaseError(error.message || 'Signup failed. Please try again.');
@@ -203,7 +203,7 @@ export default function AuthScreen() {
     try {
       const { email, password } = form;
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate('Home');
+      (navigation as any).navigate('Home');   
     } catch (error: any) {
       console.error('Login error:', error);
       setFirebaseError(error.message || 'Login failed. Please try again.');
@@ -232,7 +232,7 @@ export default function AuthScreen() {
         badges: [],
       });
 
-      navigation.navigate('Home');
+      (navigation as any).navigate('Home');
     } catch (error: any) {
       console.error('Guest login error:', error);
       setFirebaseError(error.message || 'Guest login failed. Please try again.');

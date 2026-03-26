@@ -1,25 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>😎 SMIRKLE 😎</Text>
       <Text style={styles.subtitle}>Don't Smile Challenge</Text>
-      <Button
-        title="Play Game"
-        color="#00ffea"
-        onPress={() => {
-          // TODO: Navigate to GameScreen
-        }}
-      />
-      <Button
-        title="Leaderboard"
-        color="#ffff00"
-        onPress={() => {
-          // TODO: Navigate to LeaderboardScreen
-        }}
-      />
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Game')}>
+        <Text style={styles.buttonText}>Play Now</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -49,6 +41,18 @@ const styles = StyleSheet.create({
     textShadowColor: '#00ffea',
     textShadowRadius: 10,
     marginBottom: 30,
+  },
+  button: {
+    backgroundColor: '#00ffea', // neon cyan
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 50,
+  },
+  buttonText: {
+    color: '#0a0a0a',        // dark background color for text
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

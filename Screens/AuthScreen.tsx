@@ -5,11 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth, firestore } from '../firebase';
+import { auth, db } from '../firebase';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -19,13 +18,25 @@ import {
 import {
   doc,
   setDoc,
-  getDoc,
+  serverTimestamp,
+  collection,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore';
 
-// Constants
 const MIN_USERNAME_LENGTH = 3;
-const MIN_PASSWORD_LENGTH = 8;
 const MIN_AGE = 14;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+
+// Theme Constants
+const COLORS = {
+  background: '#0a0a0a',
+  neonCyan: '#00ffea',
+  neonYellow: '#ffff00',
+  neonMagenta: '#ff00ff',
+  errorRed: '#ff4d4d',
+};
 
 // Helper to calculate age from birthdate string (YYYY-MM-DD)
 const calculateAge = (birthDateString: string): number => {
@@ -47,6 +58,7 @@ export default function AuthScreen() {
   const [tab, setTab] = useState<'login' | 'signup' | 'guest'>('login');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [firebaseError, setFirebaseError] = useState<string>('');
 
   // Form state
   const [form, setForm] = useState({
@@ -93,19 +105,11 @@ export default function AuthScreen() {
       newErrors.email = 'Email is invalid';
     }
 
-    // Password
+    // Password - Regex: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < MIN_PASSWORD_LENGTH) {
-      newErrors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
-    } else if (!/[a-z]/.test(password)) {
-      newErrors.password = 'Password must contain at least one lowercase letter';
-    } else if (!/[A-Z]/.test(password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter';
-    } else if (!/[0-9]/.test(password)) {
-      newErrors.password = 'Password must contain at least one number';
-    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      newErrors.password = 'Password must contain at least one symbol';
+    } else if (!PASSWORD_REGEX.test(password)) {
+      newErrors.password = 'Password must be 8+ characters with uppercase, lowercase, number, and symbol';
     }
 
     setErrors(newErrors);
@@ -130,12 +134,34 @@ export default function AuthScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handlers
+  // Clear Firebase error when switching tabs
+  const handleTabChange = (newTab: 'login' | 'signup' | 'guest') => {
+    setTab(newTab);
+    setFirebaseError('');
+    setErrors({});
+  };
+
   const handleSignUp = async () => {
     if (!validateSignUp()) return;
     setLoading(true);
+    setFirebaseError('');
     try {
       const { username, fullName, email, password } = form;
+      
+      // Normalize username: lowercase and no spaces
+      const normalizedUsername = username.toLowerCase().replace(/\s/g, '');
+      
+      // Check if username already exists
+      const usersRef = collection(db, 'users');
+      const usernameQuery = query(usersRef, where('username', '==', normalizedUsername));
+      const usernameSnapshot = await getDocs(usernameQuery);
+      
+      if (!usernameSnapshot.empty) {
+        setFirebaseError('💀 This handle is already taken.');
+        setLoading(false);
+        return;
+      }
+      
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -145,30 +171,26 @@ export default function AuthScreen() {
 
       // Update profile with displayName
       await updateProfile(user, {
-        displayName: `${fullName} (@${username})`,
+        displayName: `${fullName} (@${normalizedUsername})`,
       });
 
-      // Create user document in Firirestore
-      const userDoc = doc(firestore, 'users', user.uid);
+      // Create user document in Firestore
+      const userDoc = doc(db, 'users', user.uid);
       await setDoc(userDoc, {
-        username,
+        username: normalizedUsername,
         fullName,
-        email,
-        createdAt: new Date().toISOString(),
+        birthdate: form.birthdate,
+        createdAt: serverTimestamp(),
         lifetimeScore: 0,
         level: 0,
         badges: [],
       });
 
       // Navigate to Home
-      navigation.replace('Home');
+      navigation.navigate('Home');
     } catch (error: any) {
       console.error('Signup error:', error);
-      if (error.code === 'auth/email-already-in-use') {
-        Alert.alert('Error', 'This email is already registered.');
-      } else {
-        Alert.alert('Error', error.message || 'Signup failed');
-      }
+      setFirebaseError(error.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -177,19 +199,14 @@ export default function AuthScreen() {
   const handleLogin = async () => {
     if (!validateLogin()) return;
     setLoading(true);
+    setFirebaseError('');
     try {
       const { email, password } = form;
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.replace('Home');
+      navigation.navigate('Home');
     } catch (error: any) {
       console.error('Login error:', error);
-      if (error.code === 'auth/user-not-found') {
-        Alert.alert('Error', 'No user found with this email.');
-      } else if (error.code === 'auth/wrong-password') {
-        Alert.alert('Error', 'Incorrect password.');
-      } else {
-        Alert.alert('Error', error.message || 'Login failed');
-      }
+      setFirebaseError(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -197,24 +214,28 @@ export default function AuthScreen() {
 
   const handleGuest = async () => {
     setLoading(true);
+    setFirebaseError('');
     try {
       const userCredential = await signInAnonymously(auth);
       const user = userCredential.user;
 
+      const guestUsername = `Guest_${user.uid.slice(0, 8)}`;
+
       // Create anonymous user document in Firestore
-      const userDoc = doc(firestore, 'users', user.uid);
+      const userDoc = doc(db, 'users', user.uid);
       await setDoc(userDoc, {
+        username: guestUsername,
         isAnonymous: true,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         lifetimeScore: 0,
         level: 0,
         badges: [],
       });
 
-      navigation.replace('Home');
+      navigation.navigate('Home');
     } catch (error: any) {
       console.error('Guest login error:', error);
-      Alert.alert('Error', error.message || 'Guest login failed');
+      setFirebaseError(error.message || 'Guest login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -225,17 +246,17 @@ export default function AuthScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>😎 SMIRKLE 😎</Text>
-        <Text style={styles.subtitle}>Don't Smile Challenge</Text>
+        <Text style={styles.subtitle}>Don't Smile Challenge 😁</Text>
       </View>
 
-      {/* Tabs */}
+      {/* Tabs as big neon buttons */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
           style={[
             styles.tabButton,
             tab === 'login' && styles.tabActive,
           ]}
-          onPress={() => setTab('login')}
+          onPress={() => handleTabChange('login')}
         >
           <Text style={styles.tabText}>Login</Text>
         </TouchableOpacity>
@@ -245,7 +266,7 @@ export default function AuthScreen() {
             styles.tabButton,
             tab === 'signup' && styles.tabActive,
           ]}
-          onPress={() => setTab('signup')}
+          onPress={() => handleTabChange('signup')}
         >
           <Text style={styles.tabText}>Signup</Text>
         </TouchableOpacity>
@@ -255,7 +276,7 @@ export default function AuthScreen() {
             styles.tabButton,
             tab === 'guest' && styles.tabActive,
           ]}
-          onPress={() => setTab('guest')}
+          onPress={() => handleTabChange('guest')}
         >
           <Text style={styles.tabText}>Guest</Text>
         </TouchableOpacity>
@@ -376,14 +397,18 @@ export default function AuthScreen() {
             style={[
               styles.button,
               styles.buttonGuest,
+              styles.buttonShadow,
             ]}
             onPress={handleGuest}
             disabled={loading}
           >
-            {loading ? (
-              <Text style={styles.buttonText}>Playing...</Text>
+              {loading ? (
+              <>
+                <ActivityIndicator size="small" color={COLORS.neonCyan} />
+                <Text style={styles.buttonText}> Playing...</Text>
+              </>
             ) : (
-              <Text style={styles.buttonText}>👻 Play as Guest</Text>
+              <Text style={styles.buttonText}>😎 Play as Guest 😎</Text>
             )}
           </TouchableOpacity>
         )}
@@ -393,14 +418,18 @@ export default function AuthScreen() {
             style={[
               styles.button,
               styles.buttonSignup,
+              styles.buttonShadow,
             ]}
             onPress={handleSignUp}
             disabled={loading}
           >
             {loading ? (
-              <Text style={styles.buttonText}>Creating...</Text>
+              <>
+                <ActivityIndicator size="small" color={COLORS.neonCyan} />
+                <Text style={styles.buttonText}> Creating...</Text>
+              </>
             ) : (
-              <Text style={styles.buttonText}>🚀 Create Account</Text>
+              <Text style={styles.buttonText}>🔥 Create Account 🔥</Text>
             )}
           </TouchableOpacity>
         )}
@@ -410,16 +439,24 @@ export default function AuthScreen() {
             style={[
               styles.button,
               styles.buttonLogin,
+              styles.buttonShadow,
             ]}
             onPress={handleLogin}
             disabled={loading}
           >
             {loading ? (
-              <Text style={styles.buttonText}>Logging in...</Text>
+              <>
+                <ActivityIndicator size="small" color={COLORS.neonCyan} />
+                <Text style={styles.buttonText}> Logging in...</Text>
+              </>
             ) : (
-              <Text style={styles.buttonText}>🔑 Login</Text>
+              <Text style={styles.buttonText}>💀 Login 💀</Text>
             )}
           </TouchableOpacity>
+        )}
+
+        {firebaseError && (
+          <Text style={styles.firebaseErrorText}>{firebaseError}</Text>
         )}
       </View>
 
@@ -428,7 +465,7 @@ export default function AuthScreen() {
         {tab === 'login' && (
           <Text style={styles.footerText}>
             Don't have an account?{' '}
-            <TouchableOpacity onPress={() => setTab('signup')}>
+            <TouchableOpacity onPress={() => handleTabChange('signup')}>
               <Text style={styles.footerLink}>Sign up</Text>
             </TouchableOpacity>
           </Text>
@@ -436,7 +473,7 @@ export default function AuthScreen() {
         {tab === 'signup' && (
           <Text style={styles.footerText}>
             Already have an account?{' '}
-            <TouchableOpacity onPress={() => setTab('login')}>
+            <TouchableOpacity onPress={() => handleTabChange('login')}>
               <Text style={styles.footerLink}>Login</Text>
             </TouchableOpacity>
           </Text>
@@ -449,87 +486,122 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: COLORS.background,
     padding: 20,
   },
   header: {
     alignItems: 'center',
     marginBottom: 30,
+    marginTop: 60,
   },
   title: {
-    fontSize: 32,
-    color: '#00ffea', // neon cyan
-    fontWeight: 'bold',
-    textShadowColor: '#ff00ff', // magenta glow
+    fontSize: 38,
+    color: COLORS.neonCyan,
+    fontWeight: '900',
+    textShadowColor: COLORS.neonMagenta,
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 15,
-    letterSpacing: 2,
-    marginBottom: 5,
+    textShadowRadius: 20,
+    letterSpacing: 4,
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#ffff00', // neon yellow
-    textShadowColor: '#00ffea',
-    textShadowRadius: 10,
+    fontSize: 16,
+    color: COLORS.neonYellow,
+    textShadowColor: COLORS.neonCyan,
+    textShadowRadius: 8,
+    fontWeight: '600',
+    letterSpacing: 1,
   },
   tabsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
+    marginBottom: 25,
+    borderWidth: 2,
+    borderColor: COLORS.neonMagenta,
+    borderRadius: 10,
+    padding: 5,
   },
   tabButton: {
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 50,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    flex: 1,
+    alignItems: 'center',
   },
   tabActive: {
-    backgroundColor: '#00ffea', // neon cyan
+    backgroundColor: COLORS.neonCyan,
+    borderColor: COLORS.neonMagenta,
   },
   tabText: {
-    color: '#0a0a0a',
-    fontWeight: '600',
-    fontSize: 16,
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+    letterSpacing: 1,
+    textShadowColor: COLORS.neonCyan,
+    textShadowRadius: 5,
   },
   formContainer: {
-    gap: 15,
+    gap: 12,
+    borderWidth: 2,
+    borderColor: COLORS.neonCyan,
+    borderRadius: 12,
+    padding: 20,
+    backgroundColor: '#0d0d0d',
   },
   input: {
     backgroundColor: '#1a1a1a',
-    borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 10,
-    padding: 15,
+    borderWidth: 2,
+    borderColor: COLORS.neonMagenta,
+    borderRadius: 8,
+    padding: 16,
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
   },
   inputError: {
-    borderColor: '#ff00ff', // magenta for error
+    borderColor: COLORS.errorRed,
   },
   errorText: {
-    color: '#ff00ff',
+    color: COLORS.errorRed,
     fontSize: 12,
     marginTop: -5,
+    fontWeight: '600',
+    textShadowColor: COLORS.errorRed,
+    textShadowRadius: 3,
   },
   button: {
-    backgroundColor: '#00ffea', // neon cyan
-    borderRadius: 50,
-    paddingVertical: 15,
+    borderRadius: 8,
+    paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 15,
+    borderWidth: 3,
   },
   buttonGuest: {
-    backgroundColor: '#ff00ff', // magenta for guest
+    backgroundColor: COLORS.neonMagenta,
+    borderColor: COLORS.neonYellow,
   },
   buttonSignup: {
-    backgroundColor: '#00ffea', // neon cyan
+    backgroundColor: COLORS.neonCyan,
+    borderColor: COLORS.neonMagenta,
   },
   buttonLogin: {
-    backgroundColor: '#ffff00', // neon yellow
+    backgroundColor: COLORS.neonYellow,
+    borderColor: COLORS.neonCyan,
   },
   buttonText: {
-    color: '#0a0a0a',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: COLORS.background,
+    fontWeight: '900',
+    fontSize: 18,
+    letterSpacing: 2,
+  },
+  buttonShadow: {
+    shadowColor: COLORS.neonCyan,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 15,
+    elevation: 10,
   },
   footer: {
     marginTop: 30,
@@ -540,7 +612,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   footerLink: {
-    color: '#00ffea',
-    fontWeight: '600',
+    color: COLORS.neonCyan,
+    fontWeight: '800',
+    textShadowColor: COLORS.neonMagenta,
+    textShadowRadius: 5,
+  },
+  firebaseErrorText: {
+    color: COLORS.errorRed,
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 15,
+    textShadowColor: COLORS.errorRed,
+    textShadowRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.errorRed,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: 'rgba(255, 77, 77, 0.1)',
   },
 });

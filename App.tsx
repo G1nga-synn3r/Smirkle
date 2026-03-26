@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import HomeScreen from './Screens/HomeScreen';
 import AuthScreen from './Screens/AuthScreen';
+import GameScreen from './Screens/GameScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,11 @@ export default function App() {
             name="Home" 
             component={HomeScreen} 
             options={{ title: 'Home' }} 
+          />
+          <Stack.Screen 
+            name="Game" 
+            component={GameScreen} 
+            options={{ title: 'Game' }} 
           />
         </Stack.Navigator>
       </NavigationContainer>

@@ -6,35 +6,34 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Platform
 } from 'react-native';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 type UserRank = {
   id: string;
-  nickname: string;
+  username: string;
   lifetimeScore: number;
   sessionHighScore: number;
 };
 
 const LeaderboardScreen = () => {
-  const [activeTab, setActiveTab] = useState<'lifetime' | 'session'>('lifetime');
+  const [activeTab, setActiveTab] = useState<'session' | 'lifetime'>('session');
   const [users, setUsers] = useState<UserRank[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showTop100, setShowTop100] = useState(false);
+  const [showTop1000, setShowTop1000] = useState(false);
   const DISPLAY_LIMIT = 20;
-  const MAX_LIMIT = 100;
+  const MAX_LIMIT = 1000;
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [activeTab, showTop100]);
+  }, [activeTab, showTop1000]);
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
       const field = activeTab === 'lifetime' ? 'lifetimeScore' : 'sessionHighScore';
-      const limitCount = showTop100 ? MAX_LIMIT : DISPLAY_LIMIT;
+      const limitCount = showTop1000 ? MAX_LIMIT : DISPLAY_LIMIT;
       const q = query(
         collection(db, 'users'),
         orderBy(field, 'desc'),
@@ -45,12 +44,11 @@ const LeaderboardScreen = () => {
       const userData: UserRank[] = snapshot.docs
         .map((doc) => ({
           id: doc.id,
-          nickname: doc.data().username || doc.data().nickname || 'Anonymous',
+          username: doc.data().username || 'Anonymous',
           lifetimeScore: doc.data().lifetimeScore || 0,
           sessionHighScore: doc.data().sessionHighScore || 0,
         }))
-        // Filter out guest users from leaderboard
-        .filter((user) => !user.nickname.toLowerCase().startsWith('guest_'));
+        .filter((user) => user.username && !user.username.toLowerCase().startsWith('guest_'));
 
       setUsers(userData);
     } catch (error) {
@@ -61,9 +59,9 @@ const LeaderboardScreen = () => {
   };
 
   const getRankBorderColor = (index: number) => {
-    if (index === 0) return '#ffff00'; // Gold
-    if (index === 1) return '#c0c0c0'; // Silver
-    if (index === 2) return '#cd7f32'; // Bronze
+    if (index === 0) return '#ffff00';
+    if (index === 1) return '#c0c0c0';
+    if (index === 2) return '#cd7f32';
     return '#333';
   };
 
@@ -76,6 +74,7 @@ const LeaderboardScreen = () => {
 
   const renderItem = ({ item, index }: { item: UserRank; index: number }) => {
     const score = activeTab === 'lifetime' ? item.lifetimeScore : item.sessionHighScore;
+    const highScore = item.sessionHighScore;
     
     return (
       <View
@@ -87,7 +86,7 @@ const LeaderboardScreen = () => {
       >
         <View style={styles.rankLeft}>
           <Text style={styles.rankNumber}>{getRankEmoji(index)}</Text>
-          <Text style={styles.nickname}>{item.nickname}</Text>
+          <Text style={styles.username}>@{item.username}</Text>
         </View>
         <View style={styles.rankRight}>
           <Text style={[
@@ -96,6 +95,9 @@ const LeaderboardScreen = () => {
           ]}>
             {score.toLocaleString()} pts
           </Text>
+          {activeTab === 'lifetime' && highScore > 0 && (
+            <Text style={styles.highScoreText}>Best: {highScore.toLocaleString()}</Text>
+          )}
         </View>
       </View>
     );
@@ -105,22 +107,21 @@ const LeaderboardScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>🏆 LEADERBOARD</Text>
       
-      {/* Tab Selector */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'lifetime' && styles.activeTab]}
-          onPress={() => setActiveTab('lifetime')}
+          style={[styles.tab, activeTab === 'session' && styles.activeTab]}
+          onPress={() => { setActiveTab('session'); setShowTop1000(false); }}
         >
-          <Text style={[styles.tabText, activeTab === 'lifetime' && styles.activeTabText]}>
-            LIFETIME
+          <Text style={[styles.tabText, activeTab === 'session' && styles.activeTabText]}>
+            HIGH SCORE
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'session' && styles.activeTab]}
-          onPress={() => setActiveTab('session')}
+          style={[styles.tab, activeTab === 'lifetime' && styles.activeTab]}
+          onPress={() => { setActiveTab('lifetime'); setShowTop1000(false); }}
         >
-          <Text style={[styles.tabText, activeTab === 'session' && styles.activeTabText]}>
-            SESSION
+          <Text style={[styles.tabText, activeTab === 'lifetime' && styles.activeTabText]}>
+            LIFETIME
           </Text>
         </TouchableOpacity>
       </View>
@@ -140,20 +141,19 @@ const LeaderboardScreen = () => {
             contentContainerStyle={styles.listContent}
           />
           
-          {/* Expand Button */}
-          {!showTop100 && users.length >= 20 && (
+          {!showTop1000 && users.length >= 20 && (
             <TouchableOpacity 
               style={styles.expandButton}
-              onPress={() => setShowTop100(true)}
+              onPress={() => setShowTop1000(true)}
             >
-              <Text style={styles.expandButtonText}>View Top 100</Text>
+              <Text style={styles.expandButtonText}>View Top 1000</Text>
             </TouchableOpacity>
           )}
           
-          {showTop100 && (
+          {showTop1000 && (
             <TouchableOpacity 
               style={styles.expandButton}
-              onPress={() => setShowTop100(false)}
+              onPress={() => setShowTop1000(false)}
             >
               <Text style={styles.expandButtonText}>Show Less</Text>
             </TouchableOpacity>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: '#888',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   activeTabText: {
@@ -256,6 +256,7 @@ const styles = StyleSheet.create({
   rankLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   rankNumber: {
     fontSize: 20,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginRight: 10,
   },
-  nickname: {
+  username: {
     color: '#00ffea',
     fontSize: 16,
     fontWeight: 'bold',
@@ -282,6 +283,11 @@ const styles = StyleSheet.create({
     textShadowColor: '#ffff00',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 3,
+  },
+  highScoreText: {
+    color: '#ff00ff',
+    fontSize: 12,
+    marginTop: 2,
   },
 });
 

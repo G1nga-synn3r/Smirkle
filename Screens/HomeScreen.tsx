@@ -84,11 +84,17 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Leaderboard')}
+        >
           <Text style={styles.actionButtonText}>Leaderboard 🏆</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Submit Video 📹</Text>
+        <TouchableOpacity 
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Search')}
+        >
+          <Text style={styles.actionButtonText}>Find Players 🔍</Text>
         </TouchableOpacity>
       </View>
     </View>

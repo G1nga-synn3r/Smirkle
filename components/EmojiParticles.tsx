@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Dimensions } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -97,11 +97,14 @@ const EmojiParticle: React.FC<{ particle: Particle; onComplete?: () => void; ind
 
 interface EmojiParticlesProps {
   emojis: string[];
+  visible: boolean;
   onComplete?: () => void;
 }
 
-export default function EmojiParticles({ emojis, onComplete }: EmojiParticlesProps) {
-  const [particles] = React.useState(() => createParticles(emojis));
+export default function EmojiParticles({ emojis, visible, onComplete }: EmojiParticlesProps) {
+  const [particles] = useState(() => createParticles(emojis));
+
+  if (!visible) return null;
 
   return (
     <>

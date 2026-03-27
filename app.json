@@ -5,36 +5,41 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0a0a0a"
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.gingervaile.Smirkle",
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
+        "NSCameraUsageDescription": "Allow Smirkle to access your camera for gameplay and video processing."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0a0a0a",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
+      "package": "com.gingervaile.Smirkle",
       "permissions": [
-        "android.permission.CAMERA"
-      ],
-      "package": "com.gingervaile.Smirkle"
+        "CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "react-native-vision-camera"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Smirkle to access your camera to detect smiles and smirks during gameplay."
+        }
+      ]
     ],
     "extra": {
       "eas": {

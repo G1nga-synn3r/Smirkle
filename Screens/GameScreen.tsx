@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Linking, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
-import YouTube from 'react-native-youtube-iframe';
 import { auth, db } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import EmojiParticles from '../components/EmojiParticles';
+import YouTubePlayer from '../components/YouTubePlayer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +35,9 @@ const GameScreen = ({ navigation }: any) => {
   const [hasFailed, setHasFailed] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState('dQw4w9WgXcQ');
+  const [showParticles, setShowParticles] = useState(false);
+  const [particleEmojis, setParticleEmojis] = useState<string[]>([]);
+  const [lastLevel, setLastLevel] = useState(0);
 
   const hasPermission = permission?.granted;
 
@@ -171,6 +175,17 @@ const GameScreen = ({ navigation }: any) => {
       }
     };
   }, [isVideoPlaying, hasFailed, gameStarted]);
+
+  // Level up detection and particle trigger
+  useEffect(() => {
+    const levelThreshold = 111 * 60 * 9 * (lastLevel + 1) * (lastLevel + 1);
+    if (score >= levelThreshold && score > 0) {
+      setLastLevel(prev => prev + 1);
+      const celebrationEmojis = ['🎉', '⭐', '🔥', '💥', '✨', '🌟', '🎊', '🏆'];
+      setParticleEmojis(celebrationEmojis);
+      setShowParticles(true);
+    }
+  }, [score, lastLevel]);
 
   // Start game
   const startGame = () => {
@@ -374,18 +389,17 @@ const GameScreen = ({ navigation }: any) => {
   return (
     <View style={styles.gameContainer}>
       {/* YouTube Video Fullscreen */}
-      <YouTube
+      <YouTubePlayer
         videoId={currentVideoId}
-        play={true}
         style={StyleSheet.absoluteFill}
-        onChangeState={onYouTubeChangeState}
-        volume={100}
+        onStateChange={onYouTubeChangeState}
       />
       
       {/* Score Display */}
       <View style={styles.scoreOverlay}>
         <Text style={styles.scoreText}>{score.toLocaleString()}</Text>
         <Text style={styles.scoreLabel}>POINTS</Text>
+        {lastLevel > 0 && <Text style={styles.levelText}>LVL {lastLevel}</Text>}
       </View>
 
       {/* Camera PiP Overlay */}
@@ -417,6 +431,13 @@ const GameScreen = ({ navigation }: any) => {
       >
         <Text style={styles.stopButtonText}>STOP</Text>
       </TouchableOpacity>
+
+      {/* Level Up Particles */}
+      <EmojiParticles
+        emojis={particleEmojis}
+        visible={showParticles}
+        onComplete={() => setShowParticles(false)}
+      />
     </View>
   );
 };
@@ -533,6 +554,12 @@ const styles = StyleSheet.create({
     color: '#ffff00',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  levelText: {
+    color: '#00ffea',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 5,
   },
   pipContainer: {
     position: 'absolute',

@@ -18,14 +18,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 const ProfileScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [nickname, setNickname] = useState('');
+  const [username, setUsername] = useState('');
   const [motto, setMotto] = useState('');
   const [location, setLocation] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [level, setLevel] = useState(1);
   const [lifetimeScore, setLifetimeScore] = useState(0);
   const [publicSettings, setPublicSettings] = useState<Record<string, boolean>>({
-    nickname: true,
+    username: true,
     motto: true,
     location: true,
     birthdate: true
@@ -71,14 +71,14 @@ const ProfileScreen = () => {
       
       if (userDoc.exists()) {
         const data = userDoc.data();
-        setNickname(data.nickname || '');
+        setUsername(data.username || '');
         setMotto(data.motto || '');
         setLocation(data.location || '');
         setBirthdate(data.birthdate || '');
         setLevel(data.level || 1);
         setLifetimeScore(data.lifetimeScore || 0);
         setPublicSettings(data.publicSettings || {
-          nickname: true,
+          username: true,
           motto: true,
           location: true,
           birthdate: true
@@ -125,7 +125,7 @@ const ProfileScreen = () => {
       setLoading(true);
       
       await updateDoc(doc(db, 'users', user.uid), {
-        nickname,
+        username,
         motto,
         location,
         birthdate,
@@ -220,9 +220,9 @@ const ProfileScreen = () => {
         <View style={styles.formContainer}>
           <View style={styles.fieldRow}>
             {renderField({ 
-              label: 'Nickname', 
-              value: nickname, 
-              onChangeText: setNickname 
+              label: 'Username', 
+              value: username, 
+              onChangeText: setUsername 
             })}
           </View>
           

@@ -12,7 +12,6 @@ import SettingsScreen from './Screens/SettingsScreen';
 import LeaderboardScreen from './Screens/LeaderboardScreen';
 import SearchScreen from './Screens/SearchScreen';
 import FriendsScreen from './Screens/FriendsScreen';
-import SubmitVideoScreen from './Screens/SubmitVideoScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,15 +72,6 @@ function MainTabs() {
           title: 'Leaderboard',
           tabBarIcon: () => null,
           tabBarLabel: '🏆',
-        }} 
-      />
-      <Tab.Screen 
-        name="Upload" 
-        component={SubmitVideoScreen}
-        options={{ 
-          title: 'Upload',
-          tabBarIcon: () => null,
-          tabBarLabel: '📤',
         }} 
       />
       <Tab.Screen 

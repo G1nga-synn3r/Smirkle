@@ -67,12 +67,27 @@ export default function AuthScreen() {
     birthdate: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
+
+  // Terms and privacy checkboxes
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [confirmedAge, setConfirmedAge] = useState(false);
 
   // Validation
   const validateSignUp = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const { username, fullName, birthdate, email, password } = form;
+    const { username, fullName, birthdate, email, password, confirmPassword } = form;
+
+    // Terms of service
+    if (!agreedToTerms) {
+      newErrors.terms = 'You must agree to the Terms of Service';
+    }
+
+    // Age confirmation
+    if (!confirmedAge) {
+      newErrors.age = 'You must confirm you are at least 14 years old';
+    }
 
     // Username
     if (!username.trim()) {
@@ -110,6 +125,13 @@ export default function AuthScreen() {
       newErrors.password = 'Password is required';
     } else if (!PASSWORD_REGEX.test(password)) {
       newErrors.password = 'Password must be 8+ characters with uppercase, lowercase, number, and symbol';
+    }
+
+    // Confirm password
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -203,7 +225,7 @@ export default function AuthScreen() {
     try {
       const { email, password } = form;
       await signInWithEmailAndPassword(auth, email, password);
-      (navigation as any).navigate('Home');   
+      (navigation as any).navigate('MainTabs');   
     } catch (error: any) {
       console.error('Login error:', error);
       setFirebaseError(error.message || 'Login failed. Please try again.');
@@ -213,6 +235,11 @@ export default function AuthScreen() {
   };
 
   const handleGuest = async () => {
+    if (!confirmedAge) {
+      setErrors({ ...errors, age: 'You must confirm you are at least 14 years old' });
+      return;
+    }
+    
     setLoading(true);
     setFirebaseError('');
     try {
@@ -230,9 +257,10 @@ export default function AuthScreen() {
         lifetimeScore: 0,
         level: 0,
         badges: [],
+        sessionHighScore: 0,
       });
 
-      (navigation as any).navigate('Home');
+      (navigation as any).navigate('MainTabs');
     } catch (error: any) {
       console.error('Guest login error:', error);
       setFirebaseError(error.message || 'Guest login failed. Please try again.');
@@ -355,6 +383,39 @@ export default function AuthScreen() {
             {errors.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
             )}
+
+            <TextInput
+              style={[
+                styles.input,
+                errors.confirmPassword && styles.inputError,
+              ]}
+              placeholder="Confirm Password"
+              value={form.confirmPassword}
+              onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
+              secureTextEntry
+            />
+            {errors.confirmPassword && (
+              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+            )}
+
+            {/* Terms and Age Checkboxes */}
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity 
+                style={styles.checkbox}
+                onPress={() => setAgreedToTerms(!agreedToTerms)}
+              >
+                <Text style={styles.checkboxText}>{agreedToTerms ? '☑️' : '⬜'} I agree to the Terms of Service</Text>
+              </TouchableOpacity>
+              {errors.terms && <Text style={styles.errorText}>{errors.terms}</Text>}
+              
+              <TouchableOpacity 
+                style={[styles.checkbox, { marginTop: 10 }]}
+                onPress={() => setConfirmedAge(!confirmedAge)}
+              >
+                <Text style={styles.checkboxText}>{confirmedAge ? '☑️' : '⬜'} I confirm I am at least 14 years old</Text>
+              </TouchableOpacity>
+              {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
+            </View>
           </>
         )}
 
@@ -393,15 +454,33 @@ export default function AuthScreen() {
 
         {/* Buttons */}
         {tab === 'guest' && (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              styles.buttonGuest,
-              styles.buttonShadow,
-            ]}
-            onPress={handleGuest}
-            disabled={loading}
-          >
+          <>
+            {/* Age Confirmation for Guest */}
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity 
+                style={styles.checkbox}
+                onPress={() => setConfirmedAge(!confirmedAge)}
+              >
+                <Text style={styles.checkboxText}>{confirmedAge ? '☑️' : '⬜'} I confirm I am at least 14 years old</Text>
+              </TouchableOpacity>
+              {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
+            </View>
+            
+            <TouchableOpacity
+              style={[
+                styles.button,
+                styles.buttonGuest,
+                styles.buttonShadow,
+              ]}
+              onPress={() => {
+                if (!confirmedAge) {
+                  setErrors({ ...errors, age: 'You must confirm you are at least 14 years old' });
+                  return;
+                }
+                handleGuest();
+              }}
+              disabled={loading}
+            >
               {loading ? (
               <>
                 <ActivityIndicator size="small" color={COLORS.neonCyan} />
@@ -410,7 +489,8 @@ export default function AuthScreen() {
             ) : (
               <Text style={styles.buttonText}>😎 Play as Guest 😎</Text>
             )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </>
         )}
 
         {tab === 'signup' && (
@@ -630,5 +710,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     backgroundColor: 'rgba(255, 77, 77, 0.1)',
+  },
+  checkboxContainer: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  checkbox: {
+    paddingVertical: 5,
+  },
+  checkboxText: {
+    color: '#fff',
+    fontSize: 14,
   },
 });

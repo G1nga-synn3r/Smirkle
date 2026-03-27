@@ -23,10 +23,12 @@ type RootStackParamList = {
 const SETTINGS_KEYS = {
   HAPTIC_FEEDBACK: 'settings_haptic',
   VIDEO_QUALITY: 'settings_video_quality',
-  VOLUME: 'settings_volume'
+  VOLUME: 'settings_volume',
+  THEME: 'settings_theme',
 };
 
 const VIDEO_QUALITY_OPTIONS = ['Low', 'Med', 'High'];
+const THEME_OPTIONS = ['Dark', 'Light'];
 
 const SettingsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -34,6 +36,7 @@ const SettingsScreen = () => {
   const [hapticEnabled, setHapticEnabled] = useState(true);
   const [videoQuality, setVideoQuality] = useState(1); // 0=Low, 1=Med, 2=High
   const [volume, setVolume] = useState(0.5);
+  const [theme, setTheme] = useState(0); // 0=Dark, 1=Light
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,10 +48,12 @@ const SettingsScreen = () => {
       const haptic = await AsyncStorage.getItem(SETTINGS_KEYS.HAPTIC_FEEDBACK);
       const video = await AsyncStorage.getItem(SETTINGS_KEYS.VIDEO_QUALITY);
       const vol = await AsyncStorage.getItem(SETTINGS_KEYS.VOLUME);
+      const themeValue = await AsyncStorage.getItem(SETTINGS_KEYS.THEME);
 
       if (haptic !== null) setHapticEnabled(JSON.parse(haptic));
       if (video !== null) setVideoQuality(parseInt(video, 10));
       if (vol !== null) setVolume(parseFloat(vol));
+      if (themeValue !== null) setTheme(parseInt(themeValue, 10));
     } catch (error) {
       console.error('Error loading settings:', error);
     } finally {
@@ -197,6 +202,37 @@ const SettingsScreen = () => {
         <Text style={styles.volumeValue}>{Math.round(volume * 100)}%</Text>
       </View>
 
+      {/* Theme Toggle */}
+      <View style={styles.settingItem}>
+        <View style={styles.settingInfo}>
+          <Text style={styles.settingLabel}>Theme</Text>
+          <Text style={styles.settingDescription}>Light or dark mode</Text>
+        </View>
+        <View style={styles.themeButtons}>
+          {THEME_OPTIONS.map((themeOption, index) => (
+            <TouchableOpacity
+              key={themeOption}
+              style={[
+                styles.themeButton,
+                theme === index && styles.themeButtonActive
+              ]}
+              onPress={async () => {
+                setTheme(index);
+                await saveSetting(SETTINGS_KEYS.THEME, index);
+                await triggerHaptic();
+              }}
+            >
+              <Text style={[
+                styles.themeButtonText,
+                theme === index && styles.themeButtonTextActive
+              ]}>
+                {themeOption}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
       {/* Spacer */}
       <View style={styles.spacer} />
 
@@ -281,6 +317,31 @@ const styles = StyleSheet.create({
   },
   qualityButtonTextActive: {
     color: '#0a0a0a',
+  },
+  themeButtonTextActive: {
+    color: '#0a0a0a',
+  },
+  themeButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  themeButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#333',
+    backgroundColor: '#0a0a0a',
+  },
+  themeButtonActive: {
+    borderColor: '#00ffea',
+    backgroundColor: '#00ffea',
+  },
+  themeButtonText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   sliderContainer: {
     flexDirection: 'row',

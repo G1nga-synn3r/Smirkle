@@ -49,7 +49,7 @@ export default function HomeScreen() {
   }, []);
 
   const handlePlay = () => {
-    navigation.navigate('GameTab');
+    navigation.navigate('Game');
   };
 
   if (loading) {

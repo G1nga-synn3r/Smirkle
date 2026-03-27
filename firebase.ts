@@ -1,10 +1,8 @@
 // firebase.ts
 import { initializeApp } from "firebase/app";
 import { initializeAuth } from "firebase/auth";
-import { getFirestore, collection, FieldValue, serverTimestamp } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getAnalytics } from "firebase/analytics";
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPKyJrtHCpBdj7FlepJXLHZPId5gBqs78",
@@ -25,17 +23,3 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 export default app;
-
-export const firebase = {
-  auth: () => auth,
-  firestore: () => db,
-  storage: () => storage,
-  collection: (name: string) => collection(db, name),
-  FieldValue: {
-    serverTimestamp: () => serverTimestamp(),
-  },
-};
-
-export { FieldValue, serverTimestamp };
-
-export const analytics = getAnalytics(app);

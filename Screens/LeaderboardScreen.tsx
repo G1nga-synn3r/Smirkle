@@ -22,28 +22,35 @@ const LeaderboardScreen = () => {
   const [activeTab, setActiveTab] = useState<'lifetime' | 'session'>('lifetime');
   const [users, setUsers] = useState<UserRank[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTop100, setShowTop100] = useState(false);
+  const DISPLAY_LIMIT = 20;
+  const MAX_LIMIT = 100;
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [activeTab]);
+  }, [activeTab, showTop100]);
 
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
       const field = activeTab === 'lifetime' ? 'lifetimeScore' : 'sessionHighScore';
+      const limitCount = showTop100 ? MAX_LIMIT : DISPLAY_LIMIT;
       const q = query(
         collection(db, 'users'),
         orderBy(field, 'desc'),
-        limit(20)
+        limit(limitCount)
       );
 
       const snapshot = await getDocs(q);
-      const userData: UserRank[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        nickname: doc.data().nickname || 'Anonymous',
-        lifetimeScore: doc.data().lifetimeScore || 0,
-        sessionHighScore: doc.data().sessionHighScore || 0,
-      }));
+      const userData: UserRank[] = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          nickname: doc.data().username || doc.data().nickname || 'Anonymous',
+          lifetimeScore: doc.data().lifetimeScore || 0,
+          sessionHighScore: doc.data().sessionHighScore || 0,
+        }))
+        // Filter out guest users from leaderboard
+        .filter((user) => !user.nickname.toLowerCase().startsWith('guest_'));
 
       setUsers(userData);
     } catch (error) {
@@ -124,13 +131,34 @@ const LeaderboardScreen = () => {
           <Text style={styles.loadingText}>Loading rankings...</Text>
         </View>
       ) : (
-        <FlatList
-          data={users}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-        />
+        <>
+          <FlatList
+            data={users}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+          />
+          
+          {/* Expand Button */}
+          {!showTop100 && users.length >= 20 && (
+            <TouchableOpacity 
+              style={styles.expandButton}
+              onPress={() => setShowTop100(true)}
+            >
+              <Text style={styles.expandButtonText}>View Top 100</Text>
+            </TouchableOpacity>
+          )}
+          
+          {showTop100 && (
+            <TouchableOpacity 
+              style={styles.expandButton}
+              onPress={() => setShowTop100(false)}
+            >
+              <Text style={styles.expandButtonText}>Show Less</Text>
+            </TouchableOpacity>
+          )}
+        </>
       )}
     </View>
   );
@@ -188,6 +216,25 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  expandButton: {
+    backgroundColor: '#1a1a1a',
+    borderWidth: 2,
+    borderColor: '#00ffea',
+    borderRadius: 30,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  expandButtonText: {
+    color: '#00ffea',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textShadowColor: '#00ffea',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
   },
   rankItem: {
     flexDirection: 'row',

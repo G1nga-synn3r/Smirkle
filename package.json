@@ -21,7 +21,6 @@
     "expo-image-picker": "^55.0.13",
     "expo-status-bar": "~55.0.4",
     "firebase": "^12.11.0",
-    "missing-asset-registry-path": "^0.0.0",
     "react": "19.2.0",
     "react-native": "0.83.2",
     "react-native-reanimated": "4.2.1",

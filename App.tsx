@@ -9,6 +9,10 @@ import AuthScreen from './Screens/AuthScreen';
 import GameScreen from './Screens/GameScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 import SettingsScreen from './Screens/SettingsScreen';
+import LeaderboardScreen from './Screens/LeaderboardScreen';
+import SearchScreen from './Screens/SearchScreen';
+import FriendsScreen from './Screens/FriendsScreen';
+import SubmitVideoScreen from './Screens/SubmitVideoScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,6 +27,9 @@ function MainTabs() {
           backgroundColor: '#0a0a0a',
           borderTopWidth: 1,
           borderTopColor: '#ff00ff',
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
         headerStyle: { backgroundColor: '#0a0a0a' },
         headerTintColor: '#00ffea',
@@ -33,12 +40,48 @@ function MainTabs() {
       }}
     >
       <Tab.Screen 
-        name="HomeTab" 
+        name="Home" 
         component={HomeScreen}
         options={{ 
           title: 'Home',
           tabBarIcon: () => null,
           tabBarLabel: '🏠',
+        }} 
+      />
+      <Tab.Screen 
+        name="Search" 
+        component={SearchScreen}
+        options={{ 
+          title: 'Search',
+          tabBarIcon: () => null,
+          tabBarLabel: '🔍',
+        }} 
+      />
+      <Tab.Screen 
+        name="Friends" 
+        component={FriendsScreen}
+        options={{ 
+          title: 'Friends',
+          tabBarIcon: () => null,
+          tabBarLabel: '👥',
+        }} 
+      />
+      <Tab.Screen 
+        name="Leaderboard" 
+        component={LeaderboardScreen}
+        options={{ 
+          title: 'Leaderboard',
+          tabBarIcon: () => null,
+          tabBarLabel: '🏆',
+        }} 
+      />
+      <Tab.Screen 
+        name="Upload" 
+        component={SubmitVideoScreen}
+        options={{ 
+          title: 'Upload',
+          tabBarIcon: () => null,
+          tabBarLabel: '📤',
         }} 
       />
       <Tab.Screen 
@@ -60,7 +103,7 @@ function MainTabs() {
         }} 
       />
       <Tab.Screen 
-        name="GameTab" 
+        name="Game" 
         component={GameScreen}
         options={{ 
           title: 'Game',

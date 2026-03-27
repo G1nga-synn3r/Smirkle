@@ -17,14 +17,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const ProfileScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [nickname, setNickname] = useState('');
   const [motto, setMotto] = useState('');
   const [location, setLocation] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [level, setLevel] = useState(1);
   const [lifetimeScore, setLifetimeScore] = useState(0);
-  const [publicSettings, setPublicSettings] = useState({
+  const [publicSettings, setPublicSettings] = useState<Record<string, boolean>>({
     nickname: true,
     motto: true,
     location: true,
@@ -33,7 +33,7 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(false);
 
   // Helper function to get earned badges based on level and score
-  const getEarnedBadges = (level, score) => {
+  const getEarnedBadges = (level: number, score: number) => {
     const badges = [];
     
     // Newbie (Default) - everyone gets this
@@ -112,7 +112,7 @@ const ProfileScreen = () => {
       quality: 1,
     });
 
-    if (!result.cancelled && result.assets[0]) {
+    if (!result.canceled && result.assets && result.assets[0]) {
       setProfileImage(result.assets[0].uri);
     }
   };
@@ -130,7 +130,7 @@ const ProfileScreen = () => {
         location,
         birthdate,
         publicSettings,
-        ...(profileImage && { profileImage })
+        ...(profileImage ? { profileImage } : {})
       });
 
       setIsEditing(false);
@@ -143,7 +143,7 @@ const ProfileScreen = () => {
     }
   };
 
-  const renderField = ({ label, value, onChangeText, secureTextEntry = false }) => {
+  const renderField = ({ label, value, onChangeText, secureTextEntry = false }: { label: string; value: string; onChangeText: (text: string) => void; secureTextEntry?: boolean }) => {
     return (
       <View style={[styles.fieldContainer, { borderColor: isEditing ? '#00ffea' : '#333' }]}>
         <Text style={styles.fieldLabel}>{label}</Text>
@@ -219,35 +219,35 @@ const ProfileScreen = () => {
         
         <View style={styles.formContainer}>
           <View style={styles.fieldRow}>
-            <renderField({ 
+            {renderField({ 
               label: 'Nickname', 
               value: nickname, 
               onChangeText: setNickname 
-            }) />
+            })}
           </View>
           
           <View style={styles.fieldRow}>
-            <renderField({ 
+            {renderField({ 
               label: 'Motto', 
               value: motto, 
               onChangeText: setMotto 
-            }) />
+            })}
           </View>
           
           <View style={styles.fieldRow}>
-            <renderField({ 
+            {renderField({ 
               label: 'Location', 
               value: location, 
               onChangeText: setLocation 
-            }) />
+            })}
           </View>
           
           <View style={styles.fieldRow}>
-            <renderField({ 
+            {renderField({ 
               label: 'Birthdate', 
               value: birthdate, 
               onChangeText: setBirthdate 
-            }) />
+            })}
           </View>
         </View>
       </View>

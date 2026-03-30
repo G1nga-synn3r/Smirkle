@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
-import HomeScreen from './Screens/HomeScreen';
+import HomeScreen from './src/screens/HomeScreen';
 import AuthScreen from './Screens/AuthScreen';
 import GameScreen from './Screens/GameScreen';
 import ProfileScreen from './Screens/ProfileScreen';

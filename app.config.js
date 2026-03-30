@@ -34,6 +34,13 @@ export default ({ config }) => ({
     },
     plugins: [
       [
+        'react-native-vision-camera',
+        {
+          cameraPermissionText: 'Allow Smirkle to access your camera for real-time face detection during gameplay.',
+          microphonePermissionText: 'Allow Smirkle to access microphone for potential gameplay features.',
+        },
+      ],
+      [
         'expo-camera',
         {
           cameraPermission: 'Allow Smirkle to access your camera to detect smiles and smirks during gameplay.',

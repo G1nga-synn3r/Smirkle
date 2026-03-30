@@ -6,7 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
 import AuthScreen from './Screens/AuthScreen';
-import GameScreen from './Screens/GameScreen';
+import GameScreen from './src/screens/GameScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 import SettingsScreen from './Screens/SettingsScreen';
 import LeaderboardScreen from './Screens/LeaderboardScreen';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,16 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import TutorialOverlay from '../../src/components/common/TutorialOverlay';
+
+interface UserData {
+  username: string;
+  level: number;
+  lifetimeScore: number;
+  badges: string[];
+  hasSeenTutorial?: boolean;
+}
 
 const COLORS = {
   background: '#0a0a0a',
@@ -28,24 +37,38 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const fetchUserData = async () => {
+    if (!auth.currentUser) return;
+    
+    try {
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data() as UserData;
+        setUserData(data);
+        if (!data.hasSeenTutorial) {
+          setShowTutorial(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!auth.currentUser) return;
-      
-      try {
-        const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-        if (userDoc.exists()) {
-          setUserData(userDoc.data() as UserData);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUserData();
+  }, []);
+
+  const handleTutorialClose = useCallback(async () => {
+    if (auth.currentUser) {
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+        hasSeenTutorial: true
+      });
+      setShowTutorial(false);
+    }
   }, []);
 
   const handlePlay = () => {
@@ -61,44 +84,48 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.profileCard}>
-        <Text style={styles.username}>
-          {userData?.username || 'Player'}
-        </Text>
-        <Text style={styles.stats}>
-          Level {userData?.level || 0} • {userData?.lifetimeScore || 0} pts
-        </Text>
-        <Text style={styles.badges}>
-          {userData?.badges && userData.badges.length > 0
-            ? userData.badges[0]
-            : 'No Badges Yet 💀'}
-        </Text>
-      </View>
+    <>
+      <TutorialOverlay visible={showTutorial} onClose={handleTutorialClose} />
+      <View style={styles.container}>
+        <View style={styles.profileCard}>
+          <Text style={styles.username}>
+            {userData?.username || 'Player'}
+          </Text>
+          <Text style={styles.stats}>
+            Level {userData?.level || 0} • {userData?.lifetimeScore || 0} pts
+          </Text>
+          <Text style={styles.badges}>
+            {userData?.badges && userData.badges.length > 0
+              ? userData.badges[0]
+              : 'No Badges Yet 💀'}
+          </Text>
+        </View>
 
-      <TouchableOpacity
-        style={styles.playButton}
-        onPress={handlePlay}
-      >
-        <Text style={styles.playButtonText}>😎 PLAY SMIRKLE</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.playButton}
+          onPress={handlePlay}
+        >
+          <Text style={styles.playButtonText}>😎 PLAY SMIRKLE</Text>
+        </TouchableOpacity>
 
-      <View style={styles.quickActions}>
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('Leaderboard')}
-        >
-          <Text style={styles.actionButtonText}>Leaderboard 🏆</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('Search')}
-        >
-          <Text style={styles.actionButtonText}>Find Players 🔍</Text>
-        </TouchableOpacity>
+        <View style={styles.quickActions}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Leaderboard')}
+          >
+            <Text style={styles.actionButtonText}>Leaderboard 🏆</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Search')}
+          >
+            <Text style={styles.actionButtonText}>Find Players 🔍</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </>
   );
+
 }
 
 const styles = StyleSheet.create({

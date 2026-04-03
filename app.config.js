@@ -5,10 +5,10 @@ export default ({ config }) => ({
     slug: 'Smirkle',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/icon.png',
+    icon: 'assets/icon.png',
     userInterfaceStyle: 'dark',
     splash: {
-      image: './assets/splash-icon.png',
+      image: 'assets/splash-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#0a0a0a',
     },
@@ -22,15 +22,15 @@ export default ({ config }) => ({
     android: {
       adaptiveIcon: {
         backgroundColor: '#0a0a0a',
-        foregroundImage: './assets/android-icon-foreground.png',
-        backgroundImage: './assets/android-icon-background.png',
-        monochromeImage: './assets/android-icon-monochrome.png',
+        foregroundImage: 'assets/android-icon-foreground.png',
+        backgroundImage: 'assets/android-icon-background.png',
+        monochromeImage: 'assets/android-icon-monochrome.png',
       },
       package: 'com.gingervaile.Smirkle',
       permissions: ['CAMERA'],
     },
     web: {
-      favicon: './assets/favicon.png',
+      favicon: 'assets/favicon.png',
     },
     plugins: [
       [

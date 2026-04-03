@@ -79,9 +79,9 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
         </Svg>
 
         {/* Main octagon border */}
-        <Animated.View style={styles.svgContainer}>
+        <Animated.View>
           <Svg
-            style={styles.svg}
+            className="absolute"
             width={OCTAGON_SIZE}
             height={OCTAGON_SIZE}
             viewBox={`0 0 ${OCTAGON_SIZE} ${OCTAGON_SIZE}`}
@@ -99,12 +99,10 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
         </Animated.View>
 
         {/* Inner input area */}
-        <View style={styles.textInputContainer}>
+        <View className="absolute top-2 left-2 right-2 bottom-2 justify-center">
           <TextInput
-            style={[
-              styles.textInput,
-              fontLoaded ? { fontFamily: 'LuckiestGuy_400Regular' } : {},
-            ]}
+            className="flex-1 text-lg text-white text-center tracking-wide p-0 bg-transparent"
+            style={fontLoaded ? { fontFamily: 'LuckiestGuy_400Regular' } : {}}
             placeholderTextColor="#888888"
             onFocus={handleFocus}
             onBlur={handleBlur}
@@ -115,10 +113,10 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
 
       {/* Label above */}
       <Animated.Text
+        className="text-base font-bold text-neon-cyan text-center uppercase tracking-wide"
         style={[
-          styles.label,
           fontLoaded ? { fontFamily: 'LuckiestGuy_400Regular' } : {},
-          focused.value && styles.labelFocused,
+          focused.value && { color: '#ffff00' },
         ]}
       >
         {label.toUpperCase()}
@@ -127,53 +125,7 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    marginVertical: 10,
-  },
-  inputWrapper: {
-    position: 'relative',
-    alignSelf: 'center',
-    marginBottom: 8,
-  },
-  glowSvg: {
-    position: 'absolute',
-    top: -10,
-    left: -10,
-  },
-  svg: {
-    position: 'absolute',
-  },
-  textInputContainer: {
-    position: 'absolute',
-    top: 8,
-    left: 8,
-    right: 8,
-    bottom: 8,
-    justifyContent: 'center',
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 18,
-    color: '#ffffff',
-    backgroundColor: 'transparent',
-    textAlign: 'center',
-    letterSpacing: 1,
-    padding: 0,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#00ffea',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  labelFocused: {
-    color: '#ffff00',
-  },
-});
+
 
 export default OctagonInput;
 

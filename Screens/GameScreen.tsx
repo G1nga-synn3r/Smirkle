@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Linking, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, Linking, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { auth, db } from '../firebase';
@@ -266,12 +266,13 @@ const GameScreen = ({ navigation }: any) => {
 
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>SMIRKLE</Text>
+      <View className="flex-1 bg-midnight-bg p-5">
+        <View className="mt-10 p-2.5 items-center">
+          <Text className="text-4xl font-black text-neon-magenta tracking-widest"
+                style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 15 }}>SMIRKLE</Text>
         </View>
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>REQUESTING CAMERA ACCESS...</Text>
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-xl font-bold text-error-red text-center">REQUESTING CAMERA ACCESS...</Text>
         </View>
       </View>
     );
@@ -279,29 +280,30 @@ const GameScreen = ({ navigation }: any) => {
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>SMIRKLE</Text>
+      <View className="flex-1 bg-midnight-bg p-5">
+        <View className="mt-10 p-2.5 items-center">
+          <Text className="text-4xl font-black text-neon-magenta tracking-widest"
+                style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 15 }}>SMIRKLE</Text>
         </View>
-        
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>CAMERA ACCESS REQUIRED</Text>
-          <Text style={styles.warningSubtext}>
+
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-xl font-bold text-error-red text-center">CAMERA ACCESS REQUIRED</Text>
+          <Text className="text-sm text-error-red mt-2.5 text-center">
             Face detection is required to play
           </Text>
-          <TouchableOpacity 
-            style={styles.retryButton}
+          <TouchableOpacity
+            className="mt-7.5 py-4 px-7.5 rounded-3xl bg-gray-800 border-2 border-error-red"
             onPress={requestCameraPermission}
           >
-            <Text style={styles.retryButtonText}>GRANT ACCESS</Text>
+            <Text className="text-base font-bold text-error-red">GRANT ACCESS</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          className="my-5 py-3 px-7.5 rounded-3xl bg-midnight-gray-dark border border-red-400 self-center"
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>GO BACK</Text>
+          <Text className="text-sm font-bold text-red-400">GO BACK</Text>
         </TouchableOpacity>
       </View>
     );
@@ -310,58 +312,60 @@ const GameScreen = ({ navigation }: any) => {
   // Pre-game: Face detection setup
   if (!gameStarted && !hasFailed) {
     return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>GET READY</Text>
-          <Text style={styles.subtitle}>Maintain your poker face!</Text>
+      <View className="flex-1 bg-midnight-bg p-5">
+        <View className="mt-10 p-2.5 items-center">
+          <Text className="text-4xl font-black text-neon-magenta tracking-widest"
+                style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 15 }}>GET READY</Text>
+          <Text className="text-base text-neon-yellow mt-2.5 text-center">Maintain your poker face!</Text>
         </View>
 
-        <View style={styles.faceDetectionContainer}>
+        <View className="flex-1 justify-center items-center mt-5">
           {/* Camera Preview */}
-          <View style={styles.cameraPreview}>
+          <View className={`w-[70vw] h-[70vw] rounded-2xl overflow-hidden border-3 border-neon-cyan`}>
             <CameraView
-              style={StyleSheet.absoluteFill}
+              className="absolute inset-0"
               facing="front"
               onCameraReady={() => setIsReady(true)}
             />
             
             {/* Face detection overlay */}
             {faceState === 'not_detected' && (
-              <View style={styles.detectionOverlay}>
-                <Text style={styles.detectionText}>Position your face in the frame</Text>
-                <Text style={styles.detectionSubtext}>Keep eyes open and don't smile</Text>
+              <View className="absolute inset-0 bg-overlay-black justify-center items-center p-5">
+                <Text className="text-lg font-bold text-error-red text-center">Position your face in the frame</Text>
+                <Text className="text-sm text-error-red mt-2.5 text-center">Keep eyes open and don't smile</Text>
               </View>
             )}
             
             {faceState === 'detected' && (
-              <View style={[styles.detectionOverlay, { backgroundColor: 'rgba(0, 255, 234, 0.3)' }]}>
-                <Text style={[styles.detectionText, { color: '#00ffea' }]}>FACE DETECTED ✓</Text>
-                <Text style={[styles.detectionSubtext, { color: '#00ffea' }]}>You're ready to play!</Text>
+              <View className="absolute inset-0 bg-cyan-glow justify-center items-center p-5">
+                <Text className="text-lg font-bold text-neon-cyan text-center">FACE DETECTED ✓</Text>
+                <Text className="text-sm text-neon-cyan mt-2.5 text-center">You're ready to play!</Text>
               </View>
             )}
           </View>
 
           {/* Score display */}
-          <View style={styles.previewScoreContainer}>
-            <Text style={styles.previewScoreLabel}>+111 points per second</Text>
+          <View className="mt-5 p-4 bg-midnight-surface rounded-xl">
+            <Text className="text-base font-bold text-neon-yellow">+111 points per second</Text>
           </View>
 
           {/* Start Button - only visible when face detected */}
           {faceDetected && (
             <TouchableOpacity
-              style={styles.startButton}
+              className="mt-7.5 bg-neon-cyan py-5 px-12.5 rounded-3xl border-3 border-neon-magenta"
+              style={{ shadowColor: '#00ffea', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20 }}
               onPress={startGame}
             >
-              <Text style={styles.startButtonText}>START GAME</Text>
+              <Text className="text-xl font-black text-midnight-bg tracking-wider">START GAME</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          className="my-5 py-3 px-7.5 rounded-3xl bg-midnight-gray-dark border border-red-400 self-center"
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>GO BACK</Text>
+          <Text className="text-sm font-bold text-red-400">GO BACK</Text>
         </TouchableOpacity>
       </View>
     );
@@ -370,16 +374,17 @@ const GameScreen = ({ navigation }: any) => {
   // Fail screen
   if (hasFailed) {
     return (
-      <View style={styles.failContainer}>
-        <View style={styles.failContent}>
-          <Text style={styles.failTitle}>GAME OVER</Text>
-          <Text style={styles.failReason}>
-            {isSmiling ? '😏 You smiled!' : 
-             eyesClosed ? '😑 Eyes closed too long!' : 
+      <View className="flex-1 bg-warning-red justify-center items-center">
+        <View className="bg-midnight-surface p-10 rounded-3xl w-[85%] items-center border-4 border-warning-red">
+          <Text className="text-4xl font-black text-warning-red tracking-widest"
+                style={{ textShadowColor: '#ff0000', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }}>GAME OVER</Text>
+          <Text className="text-xl font-bold text-neon-yellow mt-4">
+            {isSmiling ? '😏 You smiled!' :
+             eyesClosed ? '😑 Eyes closed too long!' :
              '📷 You went out of frame!'}
           </Text>
-          <Text style={styles.failScore}>FINAL SCORE: {score.toLocaleString()}</Text>
-          <Text style={styles.failSubtext}>Returning to home...</Text>
+          <Text className="text-2xl font-black text-neon-cyan mt-5">FINAL SCORE: {score.toLocaleString()}</Text>
+          <Text className="text-sm text-midnight-white mt-5 opacity-70">Returning to home...</Text>
         </View>
       </View>
     );
@@ -387,34 +392,34 @@ const GameScreen = ({ navigation }: any) => {
 
   // Active game screen
   return (
-    <View style={styles.gameContainer}>
+    <View className="flex-1 bg-black">
       {/* YouTube Video Fullscreen */}
       <YouTubePlayer
         videoId={currentVideoId}
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         onStateChange={onYouTubeChangeState}
       />
       
       {/* Score Display */}
-      <View style={styles.scoreOverlay}>
-        <Text style={styles.scoreText}>{score.toLocaleString()}</Text>
-        <Text style={styles.scoreLabel}>POINTS</Text>
-        {lastLevel > 0 && <Text style={styles.levelText}>LVL {lastLevel}</Text>}
+      <View className="absolute top-12 left-5 bg-overlay-black p-4 rounded-xl border-2 border-neon-yellow">
+        <Text className="text-4xl font-black text-neon-yellow">{score.toLocaleString()}</Text>
+        <Text className="text-xs font-bold text-neon-yellow">POINTS</Text>
+        {lastLevel > 0 && <Text className="text-sm font-bold text-neon-cyan mt-1">LVL {lastLevel}</Text>}
       </View>
 
       {/* Camera PiP Overlay */}
-      <View style={styles.pipContainer}>
+      <View className="absolute top-12 right-5 w-25 h-18.75 border-2 border-neon-cyan rounded-xl overflow-hidden">
         <CameraView
-          style={StyleSheet.absoluteFill}
+          className="absolute inset-0"
           facing="front"
         />
         
         {/* Warning Border */}
         {faceState === 'warning' && (
-          <View style={styles.warningBorder}>
-            <Text style={styles.warningBorderText}>
-              {isSmiling ? 'DON\'T SMILE!' : 
-               eyesClosed ? 'OPEN YOUR EYES!' : 
+          <View className="absolute inset-0 bg-overlay-warning justify-center items-center border-3 border-warning-red">
+            <Text className="text-xs font-bold text-midnight-white text-center">
+              {isSmiling ? 'DON\'T SMILE!' :
+               eyesClosed ? 'OPEN YOUR EYES!' :
                'STAY IN FRAME!'}
             </Text>
           </View>
@@ -422,14 +427,14 @@ const GameScreen = ({ navigation }: any) => {
       </View>
 
       {/* Stop Button */}
-      <TouchableOpacity 
-        style={styles.stopButton}
+      <TouchableOpacity
+        className="absolute bottom-12 self-center bg-overlay-warning py-2.5 px-7.5 rounded-2xl border-2 border-warning-red"
         onPress={() => {
           setHasFailed(true);
           setIsVideoPlaying(false);
         }}
       >
-        <Text style={styles.stopButtonText}>STOP</Text>
+        <Text className="text-base font-bold text-midnight-white">STOP</Text>
       </TouchableOpacity>
 
       {/* Level Up Particles */}
@@ -442,254 +447,6 @@ const GameScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  gameContainer: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  headerContainer: {
-    marginTop: 40,
-    padding: 10,
-    alignItems: 'center',
-  },
-  title: {
-    color: '#ff00ff',
-    fontSize: 32,
-    fontWeight: '900',
-    letterSpacing: 4,
-    textShadowColor: '#ff00ff',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 15,
-  },
-  subtitle: {
-    color: '#ffff00',
-    fontSize: 16,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  faceDetectionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  cameraPreview: {
-    width: width * 0.7,
-    height: width * 0.7,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: '#00ffea',
-  },
-  detectionOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  detectionText: {
-    color: '#ff3333',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  detectionSubtext: {
-    color: '#ff3333',
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  previewScoreContainer: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-  },
-  previewScoreLabel: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  startButton: {
-    marginTop: 30,
-    backgroundColor: '#00ffea',
-    paddingVertical: 20,
-    paddingHorizontal: 50,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#ff00ff',
-    shadowColor: '#00ffea',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-  },
-  startButtonText: {
-    color: '#0a0a0a',
-    fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 2,
-  },
-  scoreOverlay: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 15,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#ffff00',
-  },
-  scoreText: {
-    color: '#ffff00',
-    fontSize: 36,
-    fontWeight: '900',
-  },
-  scoreLabel: {
-    color: '#ffff00',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  levelText: {
-    color: '#00ffea',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginTop: 5,
-  },
-  pipContainer: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    width: 100,
-    height: 75,
-    borderWidth: 2,
-    borderColor: '#00ffea',
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  warningBorder: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#ff0000',
-  },
-  warningBorderText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  stopButton: {
-    position: 'absolute',
-    bottom: 50,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(255, 0, 0, 0.7)',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#ff0000',
-  },
-  stopButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  failContainer: {
-    flex: 1,
-    backgroundColor: '#ff0000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  failContent: {
-    backgroundColor: '#1a1a1a',
-    padding: 40,
-    borderRadius: 30,
-    width: '85%',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: '#ff0000',
-  },
-  failTitle: {
-    color: '#ff0000',
-    fontSize: 36,
-    fontWeight: '900',
-    letterSpacing: 4,
-    textShadowColor: '#ff0000',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-  },
-  failReason: {
-    color: '#ffff00',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 15,
-  },
-  failScore: {
-    color: '#00ffea',
-    fontSize: 28,
-    fontWeight: '900',
-    marginTop: 20,
-  },
-  failSubtext: {
-    color: '#fff',
-    fontSize: 14,
-    marginTop: 20,
-    opacity: 0.7,
-  },
-  warningContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  warningText: {
-    color: '#ff3333',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  warningSubtext: {
-    color: '#ff3333',
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 30,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 30,
-    backgroundColor: '#331111',
-    borderWidth: 2,
-    borderColor: '#ff3333',
-  },
-  retryButtonText: {
-    color: '#ff3333',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    marginVertical: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 50,
-    backgroundColor: '#333',
-    borderWidth: 1,
-    borderColor: '#ff4d4d',
-    alignSelf: 'center',
-  },
-  backButtonText: {
-    color: '#ff4d4d',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-});
+
 
 export default GameScreen;

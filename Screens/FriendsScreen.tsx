@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -155,50 +154,50 @@ const FriendsScreen = () => {
   };
 
   const renderFriendItem = ({ item }: { item: Friend }) => (
-    <View style={styles.friendItem}>
-      <View style={styles.avatarContainer}>
-        <Text style={styles.avatarText}>
+    <View className="flex-row items-center bg-midnight-surface p-4 rounded-xl mb-2.5 border-2 border-midnight-gray-dark">
+      <View className="w-12.5 h-12.5 rounded-3xl bg-neon-magenta justify-center items-center mr-4">
+        <Text className="text-xl font-bold text-midnight-bg">
           {item.username.charAt(0).toUpperCase()}
         </Text>
       </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.username}>@{item.username}</Text>
+      <View className="flex-1">
+        <Text className="text-base font-bold text-neon-cyan">@{item.username}</Text>
         {item.fullName && (
-          <Text style={styles.fullName}>{item.fullName}</Text>
+          <Text className="text-sm text-neon-yellow mt-0.5">{item.fullName}</Text>
         )}
       </View>
       <TouchableOpacity
-        style={styles.removeButton}
+        className="w-7.5 h-7.5 rounded-2xl bg-error-red justify-center items-center"
         onPress={() => handleRemoveFriend(item.id)}
       >
-        <Text style={styles.removeButtonText}>✕</Text>
+        <Text className="font-bold text-white">✕</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderRequestItem = ({ item }: { item: PendingRequest }) => (
-    <View style={styles.requestItem}>
-      <View style={styles.avatarContainer}>
-        <Text style={styles.avatarText}>
+    <View className="flex-row items-center bg-midnight-surface p-4 rounded-xl mb-2.5 border-2 border-neon-magenta">
+      <View className="w-12.5 h-12.5 rounded-3xl bg-neon-magenta justify-center items-center mr-4">
+        <Text className="text-xl font-bold text-midnight-bg">
           {item.username.charAt(0).toUpperCase()}
         </Text>
       </View>
-      <View style={styles.requestInfo}>
-        <Text style={styles.username}>@{item.username}</Text>
-        <Text style={styles.requestText}>wants to be friends</Text>
+      <View className="flex-1">
+        <Text className="text-base font-bold text-neon-cyan">@{item.username}</Text>
+        <Text className="text-sm text-neon-magenta mt-0.5">wants to be friends</Text>
       </View>
-      <View style={styles.requestActions}>
+      <View className="flex-row gap-2.5">
         <TouchableOpacity
-          style={styles.acceptButton}
+          className="w-8.75 h-8.75 rounded-4xl bg-neon-cyan justify-center items-center"
           onPress={() => handleAcceptRequest(item)}
         >
-          <Text style={styles.acceptButtonText}>✓</Text>
+          <Text className="text-lg font-bold text-midnight-bg">✓</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.declineButton}
+          className="w-8.75 h-8.75 rounded-4xl bg-error-red justify-center items-center"
           onPress={() => handleDeclineRequest(item.id)}
         >
-          <Text style={styles.declineButtonText}>✕</Text>
+          <Text className="text-lg font-bold text-white">✕</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -206,31 +205,35 @@ const FriendsScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View className="flex-1 bg-midnight-bg p-5">
         <ActivityIndicator size="large" color="#00ffea" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>👥 FRIENDS</Text>
+    <View className="flex-1 bg-midnight-bg p-5">
+      <Text className="text-2xl font-bold text-neon-yellow text-center mb-5"
+        style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+      >
+        👥 FRIENDS
+      </Text>
 
       {/* Tab Selector */}
-      <View style={styles.tabContainer}>
+      <View className="flex-row mb-5 bg-midnight-surface rounded-2xl p-1.25">
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'friends' && styles.activeTab]}
+          className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'friends' ? 'bg-neon-cyan' : ''}`}
           onPress={() => setActiveTab('friends')}
         >
-          <Text style={[styles.tabText, activeTab === 'friends' && styles.activeTabText]}>
+          <Text className={`text-sm font-bold ${activeTab === 'friends' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
             Friends ({friends.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'requests' && styles.activeTab]}
+          className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'requests' ? 'bg-neon-cyan' : ''}`}
           onPress={() => setActiveTab('requests')}
         >
-          <Text style={[styles.tabText, activeTab === 'requests' && styles.activeTabText]}>
+          <Text className={`text-sm font-bold ${activeTab === 'requests' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
             Requests ({pendingRequests.length})
           </Text>
         </TouchableOpacity>
@@ -243,7 +246,7 @@ const FriendsScreen = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>
+            <Text className="text-base text-neon-magenta text-center mt-7.5">
               No friends yet 😕 Search for players to add friends!
             </Text>
           }
@@ -255,7 +258,7 @@ const FriendsScreen = () => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
-            <Text style={styles.emptyText}>No pending requests</Text>
+            <Text className="text-base text-neon-magenta text-center mt-7.5">No pending requests</Text>
           }
         />
       )}
@@ -263,152 +266,6 @@ const FriendsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  title: {
-    color: '#ffff00',
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 15,
-    padding: 5,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  activeTab: {
-    backgroundColor: '#00ffea',
-  },
-  tabText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  activeTabText: {
-    color: '#0a0a0a',
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  friendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#333',
-  },
-  avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#ff00ff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  avatarText: {
-    color: '#0a0a0a',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  username: {
-    color: '#00ffea',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  fullName: {
-    color: '#ffff00',
-    fontSize: 14,
-    marginTop: 2,
-  },
-  removeButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#ff3333',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  requestItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#ff00ff',
-  },
-  requestInfo: {
-    flex: 1,
-  },
-  requestText: {
-    color: '#ff00ff',
-    fontSize: 14,
-    marginTop: 2,
-  },
-  requestActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  acceptButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    backgroundColor: '#00ffea',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  acceptButtonText: {
-    color: '#0a0a0a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  declineButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    backgroundColor: '#ff3333',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  declineButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  emptyText: {
-    color: '#ff00ff',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 30,
-  },
-});
+
 
 export default FriendsScreen;

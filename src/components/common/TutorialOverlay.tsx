@@ -47,7 +47,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ visible, onClose }) =
               {'\n'}
               • Smile detected
               {'\n'}
-              • Eyes closed >2s
+               • Eyes closed more than 2s
               {'\n'}
               • Face leaves frame/obscured
               {'\n'}
@@ -155,5 +155,3 @@ const styles = StyleSheet.create({
 });
 
 export default TutorialOverlay;
-
-  onClose: () => void;

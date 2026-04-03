@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -13,9 +12,9 @@ import * as Font from 'expo-font';
 import { LuckiestGuy_400Regular } from '@expo-google-fonts/luckiest-guy';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
-import OctagonInput from '../components/OctagonInput';
-import EmojiParticles from '../components/EmojiParticles';
+import { auth } from '../../firebase';
+import OctagonInput from '../../components/OctagonInput';
+import EmojiParticles from '../../components/EmojiParticles';
 
 const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '⚡️'];
 
@@ -83,28 +82,38 @@ export default function AuthScreen() {
 
   if (!fontLoaded) {
     return (
-      <View style={styles.centerContainer}>
+      <View className="flex-1 justify-center items-center bg-midnight-bg">
         <ActivityIndicator size="large" color="#00ffea" />
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      className="flex-1 bg-midnight-bg"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+      <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>SMIRKLE</Text>
-          <Text style={styles.subtitle}>Login to unleash your smirk</Text>
+        <View className="flex-grow justify-center p-10">
+          <View className="items-center mb-15">
+          <Text
+            className="text-5xl text-neon-cyan text-center tracking-widest"
+            style={{ fontFamily: 'LuckiestGuy_400Regular', textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+          >
+            SMIRKLE
+          </Text>
+          <Text
+            className="text-xl text-neon-yellow mt-2.5 text-center"
+            style={{ fontFamily: 'LuckiestGuy_400Regular' }}
+          >
+            Login to unleash your smirk
+          </Text>
         </View>
 
-        <View style={styles.form}>
+        <View className="flex-1 justify-center">
           <OctagonInput
             label="Email"
             value={email}
@@ -141,12 +150,21 @@ export default function AuthScreen() {
             />
           )}
 
-          <View style={styles.buttonContainer}>
+          <View className="items-center mt-10 mb-5">
             {loading ? (
               <ActivityIndicator size="large" color="#00ffea" />
             ) : (
-              <Text 
-                style={styles.actionButton}
+              <Text
+                className="text-2xl text-neon-magenta py-4 px-10 border-3 border-neon-cyan rounded-2xl tracking-widest uppercase"
+                style={{
+                  fontFamily: 'LuckiestGuy_400Regular',
+                  backgroundColor: 'rgba(0, 255, 234, 0.1)',
+                  shadowColor: '#00ffea',
+                  shadowOffset: { width: 0, height: 5 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 10,
+                  elevation: 10
+                }}
                 onPress={isLogin ? handleSignIn : handleSignUp}
               >
                 {isLogin ? 'SIGN IN' : 'SIGN UP'}
@@ -154,111 +172,25 @@ export default function AuthScreen() {
             )}
           </View>
 
-          <View style={styles.switchContainer}>
-            <Text style={styles.switchText}>
+          <View className="flex-row justify-center items-center my-2.5">
+            <Text className="text-base text-midnight-gray">
               {isLogin ? "Don't have an account?" : 'Have an account?'}
             </Text>
-            <Text style={styles.switchLink} onPress={toggleForm}>
+            <Text className="text-base text-neon-cyan font-bold ml-1.25" onPress={toggleForm}>
               {isLogin ? 'Sign Up' : 'Sign In'}
             </Text>
           </View>
 
           {isLogin && (
-            <Text style={styles.forgotLink} onPress={handleForgotPassword}>
+            <Text className="text-sm text-neon-yellow text-center underline" onPress={handleForgotPassword}>
               Forgot Password?
             </Text>
           )}
+        </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 40,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  title: {
-    fontFamily: 'LuckiestGuy_400Regular',
-    fontSize: 48,
-    color: '#00ffea',
-    textAlign: 'center',
-    letterSpacing: 4,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  subtitle: {
-    fontFamily: 'LuckiestGuy_400Regular',
-    fontSize: 20,
-    color: '#ffff00',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  form: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  buttonContainer: {
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 20,
-  },
-  actionButton: {
-    fontFamily: 'LuckiestGuy_400Regular',
-    fontSize: 24,
-    color: '#ff00ff',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderWidth: 3,
-    borderColor: '#00ffea',
-    backgroundColor: 'rgba(0, 255, 234, 0.1)',
-    borderRadius: 25,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-    shadowColor: '#00ffea',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  switchText: {
-    color: '#555555',
-    fontSize: 16,
-  },
-  switchLink: {
-    color: '#00ffea',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 5,
-  },
-  forgotLink: {
-    color: '#ffff00',
-    fontSize: 14,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-});
 

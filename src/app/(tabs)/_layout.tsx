@@ -1,24 +1,25 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // For icons, or use emoji labels
+import { colors } from '../theme/colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#00ffea',
-        tabBarInactiveTintColor: '#555',
+        tabBarActiveTintColor: colors.neonCyan,
+        tabBarInactiveTintColor: colors.gray,
         tabBarStyle: {
-          backgroundColor: '#0a0a0a',
+          backgroundColor: colors.background,
           borderTopWidth: 1,
-          borderTopColor: '#ff00ff',
+          borderTopColor: colors.neonMagenta,
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
         },
-        headerStyle: { backgroundColor: '#0a0a0a' },
-        headerTintColor: '#00ffea',
-        headerTitleStyle: { 
-          color: '#ffff00',
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.neonCyan,
+        headerTitleStyle: {
+          color: colors.neonYellow,
           fontWeight: 'bold',
         },
       }}

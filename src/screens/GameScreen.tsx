@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import * as Haptics from 'expo-haptics';
 import { auth, db } from '../services/firebase/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -8,29 +8,30 @@ import { getRandomApprovedVideo } from '../utils/videoService';
 import EmojiParticles from '../../components/EmojiParticles';
 import YouTubePlayer from '../../components/YouTubePlayer';
 import { colors } from '../theme/colors';
+import { useFaceDetection } from '../hooks/useFaceDetection';
 
 const { width, height } = Dimensions.get('window');
 
 type FaceState = 'not_detected' | 'detected' | 'warning' | 'failed';
 
 const GameScreen = ({ navigation }: any) => {
-  const [permission, requestPermission] = useCameraPermissions();
+  const device = useCameraDevice('front');
+  const { hasPermission, requestPermission } = useCameraPermission();
   const [isReady, setIsReady] = useState(false);
   const [score, setScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
-  const [faceDetected, setFaceDetected] = useState(false);
   const [faceState, setFaceState] = useState<FaceState>('not_detected');
-  
+
   const [isSmiling, setIsSmiling] = useState(false);
   const [eyesClosed, setEyesClosed] = useState(false);
   const [isOutOfView, setIsOutOfView] = useState(false);
-  
+
   const smileStartTime = useRef<number | null>(null);
   const eyesClosedStartTime = useRef<number | null>(null);
   const outOfViewStartTime = useRef<number | null>(null);
   const warningStartTime = useRef<number | null>(null);
   const scoreIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const [hasFailed, setHasFailed] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState('dQw4w9WgXcQ');
@@ -38,51 +39,46 @@ const GameScreen = ({ navigation }: any) => {
   const [particleEmojis, setParticleEmojis] = useState<string[]>([]);
   const [lastLevel, setLastLevel] = useState(0);
 
-  const hasPermission = permission?.granted;
+  const { faceData, frameProcessor } = useFaceDetection(!gameStarted || !hasFailed);
 
-  // Simulate face detection
+  // Real face detection logic
   useEffect(() => {
-    if (!isReady || hasFailed) return;
+    if (hasFailed) return;
 
-    const checkInterval = setInterval(() => {
-      if (!gameStarted) {
-        const randomCheck = Math.random();
-        if (randomCheck > 0.3) {
-          setFaceDetected(true);
-          setFaceState('detected');
-        } else {
-          setFaceDetected(false);
-          setFaceState('not_detected');
-        }
+    const { faceDetected, leftEyeOpenProbability, rightEyeOpenProbability, smilingProbability } = faceData;
+
+    if (!gameStarted) {
+      // Before game: check for face detected, eyes open, neutral
+      const eyesOpen = leftEyeOpenProbability > 0.5 && rightEyeOpenProbability > 0.5;
+      const neutral = smilingProbability < 0.3;
+
+      if (faceDetected && eyesOpen && neutral) {
+        setFaceState('detected');
       } else {
-        const smileCheck = Math.random();
-        const eyesCheck = Math.random();
-        const viewCheck = Math.random();
-
-        let currentSmiling = smileCheck > 0.6;
-        let currentEyesClosed = eyesCheck > 0.7;
-        let currentOutOfView = viewCheck > 0.85;
-
-        setIsSmiling(currentSmiling);
-        setEyesClosed(currentEyesClosed);
-        setIsOutOfView(currentOutOfView);
-
-        const isWarning = currentSmiling || currentEyesClosed || currentOutOfView;
-        
-        if (isWarning) {
-          if (warningStartTime.current === null) {
-            warningStartTime.current = Date.now();
-          }
-          setFaceState('warning');
-        } else {
-          warningStartTime.current = null;
-          setFaceState('detected');
-        }
+        setFaceState('not_detected');
       }
-    }, 500);
+    } else {
+      // During game: monitor for failures
+      const eyesOpen = leftEyeOpenProbability > 0.5 && rightEyeOpenProbability > 0.5;
+      const neutral = smilingProbability < 0.3;
 
-    return () => clearInterval(checkInterval);
-  }, [isReady, hasFailed, gameStarted]);
+      setIsSmiling(!neutral);
+      setEyesClosed(!eyesOpen);
+      setIsOutOfView(!faceDetected);
+
+      const isWarning = !faceDetected || !eyesOpen || !neutral;
+
+      if (isWarning) {
+        if (warningStartTime.current === null) {
+          warningStartTime.current = Date.now();
+        }
+        setFaceState('warning');
+      } else {
+        warningStartTime.current = null;
+        setFaceState('detected');
+      }
+    }
+  }, [faceData, gameStarted, hasFailed]);
 
   useEffect(() => {
     if (!gameStarted || hasFailed) return;
@@ -237,7 +233,7 @@ const GameScreen = ({ navigation }: any) => {
     }
   };
 
-  if (!permission) {
+  if (!hasPermission) {
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
@@ -250,7 +246,7 @@ const GameScreen = ({ navigation }: any) => {
     );
   }
 
-  if (!permission.granted) {
+  if (!hasPermission) {
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
@@ -281,6 +277,11 @@ const GameScreen = ({ navigation }: any) => {
   }
 
   if (!gameStarted && !hasFailed) {
+    const { faceDetected, leftEyeOpenProbability, rightEyeOpenProbability, smilingProbability } = faceData;
+    const eyesOpen = leftEyeOpenProbability > 0.5 && rightEyeOpenProbability > 0.5;
+    const neutral = smilingProbability < 0.3;
+    const allReady = faceDetected && eyesOpen && neutral;
+
     return (
       <View style={styles.container}>
         <View style={styles.headerContainer}>
@@ -290,32 +291,37 @@ const GameScreen = ({ navigation }: any) => {
 
         <View style={styles.faceDetectionContainer}>
           <View style={styles.cameraPreview}>
-            <CameraView
+            <Camera
               style={StyleSheet.absoluteFill}
-              facing="front"
-              onCameraReady={() => setIsReady(true)}
+              device={device}
+              isActive={!hasFailed}
+              frameProcessor={frameProcessor}
+              onInitialized={() => setIsReady(true)}
             />
-            
-            {faceState === 'not_detected' && (
-              <View style={styles.detectionOverlay}>
-                <Text style={styles.detectionText}>Position your face in the frame</Text>
-                <Text style={styles.detectionSubtext}>Keep eyes open and don't smile</Text>
-              </View>
-            )}
-            
-            {faceState === 'detected' && (
-              <View style={[styles.detectionOverlay, { backgroundColor: colors.cyanGlow }]}>
-                <Text style={[styles.detectionText, { color: colors.neonCyan }]}>FACE DETECTED ✓</Text>
-                <Text style={[styles.detectionSubtext, { color: colors.neonCyan }]}>You're ready to play!</Text>
-              </View>
-            )}
           </View>
 
-          <View style={styles.previewScoreContainer}>
-            <Text style={styles.previewScoreLabel}>+111 points per second</Text>
+          <View style={[styles.checklistCard, allReady && { opacity: 0.3 }]}>
+            <View style={styles.checklistItem}>
+              <View style={[styles.checkbox, faceDetected && { backgroundColor: colors.neonCyan }]}>
+                {faceDetected && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checklistText}>Face Detected</Text>
+            </View>
+            <View style={styles.checklistItem}>
+              <View style={[styles.checkbox, eyesOpen && { backgroundColor: colors.neonCyan }]}>
+                {eyesOpen && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checklistText}>Eyes Open</Text>
+            </View>
+            <View style={styles.checklistItem}>
+              <View style={[styles.checkbox, neutral && { backgroundColor: colors.neonCyan }]}>
+                {neutral && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.checklistText}>Neutral Expression</Text>
+            </View>
           </View>
 
-          {faceDetected && (
+          {allReady && (
             <TouchableOpacity
               style={styles.startButton}
               onPress={startGame}
@@ -325,8 +331,8 @@ const GameScreen = ({ navigation }: any) => {
           )}
         </View>
 
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Text style={styles.backButtonText}>GO BACK</Text>
@@ -367,16 +373,18 @@ const GameScreen = ({ navigation }: any) => {
       </View>
 
       <View style={styles.pipContainer}>
-        <CameraView
+        <Camera
           style={StyleSheet.absoluteFill}
-          facing="front"
+          device={device}
+          isActive={!hasFailed}
+          frameProcessor={frameProcessor}
         />
-        
+
         {faceState === 'warning' && (
           <View style={styles.warningBorder}>
             <Text style={styles.warningBorderText}>
-              {isSmiling ? 'DON\'T SMILE!' : 
-               eyesClosed ? 'OPEN YOUR EYES!' : 
+              {isSmiling ? 'DON\'T SMILE!' :
+               eyesClosed ? 'OPEN YOUR EYES!' :
                'STAY IN FRAME!'}
             </Text>
           </View>
@@ -649,6 +657,44 @@ const styles = StyleSheet.create({
     color: colors.errorRed,
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  checklistCard: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -width * 0.4 }, { translateY: -height * 0.2 }],
+    backgroundColor: colors.surface,
+    padding: 20,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: colors.neonCyan,
+    width: width * 0.8,
+    alignItems: 'center',
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  checkbox: {
+    width: 30,
+    height: 30,
+    borderWidth: 2,
+    borderColor: colors.white,
+    borderRadius: 5,
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    color: colors.background,
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  checklistText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

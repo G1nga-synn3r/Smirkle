@@ -5,7 +5,6 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -55,28 +54,36 @@ const SearchScreen = () => {
   };
 
   const renderItem = ({ item }: { item: SearchResult }) => (
-    <TouchableOpacity style={styles.resultItem}>
-      <View style={styles.avatarContainer}>
-        <Text style={styles.avatarText}>
+    <TouchableOpacity className="flex-row items-center bg-midnight-surface p-4 rounded-xl mb-2.5 border-2 border-midnight-gray-dark">
+      <View className="w-12.5 h-12.5 rounded-3xl bg-neon-magenta justify-center items-center mr-4">
+        <Text className="text-xl font-bold text-midnight-bg">
           {item.username.charAt(0).toUpperCase()}
         </Text>
       </View>
-      <View style={styles.userInfo}>
-        <Text style={styles.username}>@{item.username}</Text>
+      <View className="flex-1">
+        <Text className="text-base font-bold text-neon-cyan"
+          style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+        >
+          @{item.username}
+        </Text>
         {item.fullName && (
-          <Text style={styles.fullName}>{item.fullName}</Text>
+          <Text className="text-sm text-neon-yellow mt-0.5">{item.fullName}</Text>
         )}
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🔍 SEARCH PLAYERS</Text>
+    <View className="flex-1 bg-midnight-bg p-5">
+      <Text className="text-2xl font-bold text-neon-yellow text-center mb-5"
+        style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+      >
+        🔍 SEARCH PLAYERS
+      </Text>
 
-      <View style={styles.searchContainer}>
+      <View className="flex-row mb-5 gap-2.5">
         <TextInput
-          style={styles.searchInput}
+          className="flex-1 bg-midnight-surface border-2 border-neon-magenta rounded-xl p-3 text-neon-cyan text-base"
           placeholder="Enter username..."
           placeholderTextColor="#666"
           value={searchQuery}
@@ -85,13 +92,13 @@ const SearchScreen = () => {
           autoCapitalize="none"
           autoCorrect={false}
         />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>Search</Text>
+        <TouchableOpacity className="bg-neon-cyan rounded-xl py-3 px-5 justify-center" onPress={handleSearch}>
+          <Text className="text-midnight-bg font-bold text-sm">Search</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <View style={styles.loaderContainer}>
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#00ffea" />
         </View>
       ) : (
@@ -99,10 +106,10 @@ const SearchScreen = () => {
           data={results}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 20 }}
           ListEmptyComponent={
             searched ? (
-              <Text style={styles.emptyText}>No players found 😕</Text>
+              <Text className="text-base text-neon-magenta text-center mt-7.5">No players found 😕</Text>
             ) : null
           }
         />
@@ -111,103 +118,6 @@ const SearchScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  title: {
-    color: '#ffff00',
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: '#1a1a1a',
-    borderWidth: 2,
-    borderColor: '#ff00ff',
-    borderRadius: 10,
-    padding: 12,
-    color: '#00ffea',
-    fontSize: 16,
-  },
-  searchButton: {
-    backgroundColor: '#00ffea',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-  },
-  searchButtonText: {
-    color: '#0a0a0a',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 2,
-    borderColor: '#333',
-  },
-  avatarContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#ff00ff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  avatarText: {
-    color: '#0a0a0a',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  userInfo: {
-    flex: 1,
-  },
-  username: {
-    color: '#00ffea',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  fullName: {
-    color: '#ffff00',
-    fontSize: 14,
-    marginTop: 2,
-  },
-  emptyText: {
-    color: '#ff00ff',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 30,
-  },
-});
+
 
 export default SearchScreen;

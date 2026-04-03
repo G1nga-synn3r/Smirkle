@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Image, 
+import {
+  View,
+  Text,
+  Image,
   TouchableOpacity,
   TextInput,
   Switch,
@@ -181,27 +180,31 @@ const ProfileScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.centeredLoader}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-lg font-bold text-neon-cyan"
+          style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+        >
+          Loading...
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-midnight-bg p-5">
       {/* Profile Image */}
-      <View style={styles.profileImageContainer}>
+      <View className="relative items-center mb-6">
         {profileImage ? (
           <Image
             source={{ uri: profileImage }}
-            style={styles.profileImage}
+            className="w-30 h-30 rounded-3xl border-3 border-neon-magenta mb-2.5"
           />
         ) : (
-          <View style={styles.defaultProfileImage}>
+          <View className="w-30 h-30 rounded-3xl bg-midnight-surface justify-center items-center border-3 border-neon-magenta">
             <MaterialCommunityIcons name="account-circle" size={80} color="#00ffea" />
           </View>
         )}
-        <TouchableOpacity onPress={pickImage} style={styles.editImageButton}>
+        <TouchableOpacity onPress={pickImage} className="absolute bottom-0 right-0 bg-midnight-bg border-2 border-neon-yellow rounded-2xl p-1.25">
           <MaterialCommunityIcons name="camera" size={24} color="#ffff00" />
         </TouchableOpacity>
       </View>

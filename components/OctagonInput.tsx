@@ -88,23 +88,15 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
           >
           {/* Octagon path: long top/bottom, 3-segment capped ends */}
           <Path
-            d={\`
-              M 12 5 
-              L ${OCTAGON_SIZE - 12} 5 
-              L ${OCTAGON_SIZE - 7} 10 
-              L ${OCTAGON_SIZE - 7} ${OCTAGON_SIZE - 10} 
-              L ${OCTAGON_SIZE - 12} ${OCTAGON_SIZE - 5} 
-              L 12 ${OCTAGON_SIZE - 5} 
-              L 7 ${OCTAGON_SIZE - 10} 
-              L 7 10 Z
-            \`}
+            d={`M 12 5 L ${OCTAGON_SIZE - 12} 5 L ${OCTAGON_SIZE - 7} 10 L ${OCTAGON_SIZE - 7} ${OCTAGON_SIZE - 10} L ${OCTAGON_SIZE - 12} ${OCTAGON_SIZE - 5} L 12 ${OCTAGON_SIZE - 5} L 7 ${OCTAGON_SIZE - 10} L 7 10 Z`}
             fill="transparent"
             stroke={focused.value ? '#00ffea' : '#555555'}
             strokeWidth={BORDER_WIDTH}
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-        </Svg>
+          </Svg>
+        </Animated.View>
 
         {/* Inner input area */}
         <View style={styles.textInputContainer}>

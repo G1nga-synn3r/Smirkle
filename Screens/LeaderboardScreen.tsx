@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
@@ -75,28 +74,40 @@ const LeaderboardScreen = () => {
   const renderItem = ({ item, index }: { item: UserRank; index: number }) => {
     const score = activeTab === 'lifetime' ? item.lifetimeScore : item.sessionHighScore;
     const highScore = item.sessionHighScore;
-    
+
     return (
       <View
-        style={[
-          styles.rankItem,
-          { borderColor: getRankBorderColor(index) },
-          index < 3 && styles.topThreeBorder
-        ]}
+        className="flex-row justify-between items-center bg-midnight-surface p-4 mb-2.5 rounded-xl border-2"
+        style={{
+          borderColor: getRankBorderColor(index),
+          borderWidth: index < 3 ? 3 : 2,
+          shadowColor: index < 3 ? '#fff' : undefined,
+          shadowOffset: index < 3 ? { width: 0, height: 0 } : undefined,
+          shadowOpacity: index < 3 ? 0.5 : undefined,
+          shadowRadius: index < 3 ? 10 : undefined,
+        }}
       >
-        <View style={styles.rankLeft}>
-          <Text style={styles.rankNumber}>{getRankEmoji(index)}</Text>
-          <Text style={styles.username}>@{item.username}</Text>
+        <View className="flex-row items-center flex-1">
+          <Text className="text-xl font-bold w-10 text-center mr-2.5">{getRankEmoji(index)}</Text>
+          <Text className="text-base font-bold text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            @{item.username}
+          </Text>
         </View>
-        <View style={styles.rankRight}>
-          <Text style={[
-            styles.scoreText,
-            index < 3 && { color: getRankBorderColor(index) }
-          ]}>
+        <View className="items-end">
+          <Text className="text-base font-bold text-neon-yellow"
+            style={{
+              textShadowColor: '#ffff00',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 3,
+              color: index < 3 ? getRankBorderColor(index) : '#ffff00'
+            }}
+          >
             {score.toLocaleString()} pts
           </Text>
           {activeTab === 'lifetime' && highScore > 0 && (
-            <Text style={styles.highScoreText}>Best: {highScore.toLocaleString()}</Text>
+            <Text className="text-xs text-neon-magenta mt-0.5">Best: {highScore.toLocaleString()}</Text>
           )}
         </View>
       </View>
@@ -104,32 +115,36 @@ const LeaderboardScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🏆 LEADERBOARD</Text>
+    <View className="flex-1 bg-midnight-bg p-5">
+      <Text className="text-2xl font-bold text-neon-yellow text-center mb-5"
+        style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+      >
+        🏆 LEADERBOARD
+      </Text>
       
-      <View style={styles.tabContainer}>
+      <View className="flex-row mb-5 bg-midnight-surface rounded-2xl p-1.25">
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'session' && styles.activeTab]}
+          className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'session' ? 'bg-neon-cyan' : ''}`}
           onPress={() => { setActiveTab('session'); setShowTop1000(false); }}
         >
-          <Text style={[styles.tabText, activeTab === 'session' && styles.activeTabText]}>
+          <Text className={`text-sm font-bold ${activeTab === 'session' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
             HIGH SCORE
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'lifetime' && styles.activeTab]}
+          className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'lifetime' ? 'bg-neon-cyan' : ''}`}
           onPress={() => { setActiveTab('lifetime'); setShowTop1000(false); }}
         >
-          <Text style={[styles.tabText, activeTab === 'lifetime' && styles.activeTabText]}>
+          <Text className={`text-sm font-bold ${activeTab === 'lifetime' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
             LIFETIME
           </Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
-        <View style={styles.loaderContainer}>
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#00ffea" />
-          <Text style={styles.loadingText}>Loading rankings...</Text>
+          <Text className="text-base text-neon-cyan mt-2.5">Loading rankings...</Text>
         </View>
       ) : (
         <>
@@ -138,24 +153,32 @@ const LeaderboardScreen = () => {
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={{ paddingBottom: 20 }}
           />
           
           {!showTop1000 && users.length >= 20 && (
-            <TouchableOpacity 
-              style={styles.expandButton}
+            <TouchableOpacity
+              className="bg-midnight-surface border-2 border-neon-cyan rounded-3xl py-4 px-7.5 items-center mt-2.5 mb-5"
               onPress={() => setShowTop1000(true)}
             >
-              <Text style={styles.expandButtonText}>View Top 1000</Text>
+              <Text className="text-base font-bold text-neon-cyan"
+                style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+              >
+                View Top 1000
+              </Text>
             </TouchableOpacity>
           )}
-          
+
           {showTop1000 && (
-            <TouchableOpacity 
-              style={styles.expandButton}
+            <TouchableOpacity
+              className="bg-midnight-surface border-2 border-neon-cyan rounded-3xl py-4 px-7.5 items-center mt-2.5 mb-5"
               onPress={() => setShowTop1000(false)}
             >
-              <Text style={styles.expandButtonText}>Show Less</Text>
+              <Text className="text-base font-bold text-neon-cyan"
+                style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+              >
+                Show Less
+              </Text>
             </TouchableOpacity>
           )}
         </>
@@ -164,131 +187,6 @@ const LeaderboardScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  title: {
-    color: '#ffff00',
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 15,
-    padding: 5,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  activeTab: {
-    backgroundColor: '#00ffea',
-  },
-  tabText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  activeTabText: {
-    color: '#0a0a0a',
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#00ffea',
-    marginTop: 10,
-    fontSize: 16,
-  },
-  listContent: {
-    paddingBottom: 20,
-  },
-  expandButton: {
-    backgroundColor: '#1a1a1a',
-    borderWidth: 2,
-    borderColor: '#00ffea',
-    borderRadius: 30,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  expandButtonText: {
-    color: '#00ffea',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  rankItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 12,
-    borderWidth: 2,
-  },
-  topThreeBorder: {
-    borderWidth: 3,
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-  rankLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  rankNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    width: 40,
-    textAlign: 'center',
-    marginRight: 10,
-  },
-  username: {
-    color: '#00ffea',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  rankRight: {
-    alignItems: 'flex-end',
-  },
-  scoreText: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  highScoreText: {
-    color: '#ff00ff',
-    fontSize: 12,
-    marginTop: 2,
-  },
-});
+
 
 export default LeaderboardScreen;

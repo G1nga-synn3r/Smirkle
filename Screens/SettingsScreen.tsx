@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Switch,
   TouchableOpacity,
   Alert,
@@ -127,21 +126,33 @@ const SettingsScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Loading settings...</Text>
+      <View className="flex-1 bg-midnight-bg p-5">
+        <Text className="text-lg text-neon-cyan text-center mt-12.5">Loading settings...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>⚙️ SETTINGS</Text>
+    <View className="flex-1 bg-midnight-bg p-5">
+      <Text className="text-2xl font-bold text-neon-yellow text-center mb-7.5"
+        style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 10 }}
+      >
+        ⚙️ SETTINGS
+      </Text>
 
       {/* Haptic Feedback Toggle */}
-      <View style={styles.settingItem}>
-        <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Haptic Feedback</Text>
-          <Text style={styles.settingDescription}>Vibration feedback on interactions</Text>
+      <View className="bg-midnight-surface rounded-2xl p-4 mb-4 border-2 border-midnight-gray-dark">
+        <View className="mb-2.5">
+          <Text className="text-lg font-bold text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            Haptic Feedback
+          </Text>
+          <Text className="text-sm text-neon-magenta mt-1.25"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Vibration feedback on interactions
+          </Text>
         </View>
         <Switch
           value={hapticEnabled}
@@ -152,25 +163,27 @@ const SettingsScreen = () => {
       </View>
 
       {/* Video Quality Toggle */}
-      <View style={styles.settingItem}>
-        <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Video Quality</Text>
-          <Text style={styles.settingDescription}>Higher quality uses more data</Text>
+      <View className="bg-midnight-surface rounded-2xl p-4 mb-4 border-2 border-midnight-gray-dark">
+        <View className="mb-2.5">
+          <Text className="text-lg font-bold text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            Video Quality
+          </Text>
+          <Text className="text-sm text-neon-magenta mt-1.25"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Higher quality uses more data
+          </Text>
         </View>
-        <View style={styles.qualityButtons}>
+        <View className="flex-row justify-around mt-2.5">
           {VIDEO_QUALITY_OPTIONS.map((quality, index) => (
             <TouchableOpacity
               key={quality}
-              style={[
-                styles.qualityButton,
-                videoQuality === index && styles.qualityButtonActive
-              ]}
+              className={`py-2 px-5 rounded-xl border-2 bg-midnight-bg ${videoQuality === index ? 'border-neon-cyan bg-neon-cyan' : 'border-midnight-gray-dark'}`}
               onPress={() => handleVideoQualityChange(index)}
             >
-              <Text style={[
-                styles.qualityButtonText,
-                videoQuality === index && styles.qualityButtonTextActive
-              ]}>
+              <Text className={`text-sm font-bold ${videoQuality === index ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
                 {quality}
               </Text>
             </TouchableOpacity>
@@ -179,15 +192,23 @@ const SettingsScreen = () => {
       </View>
 
       {/* Volume Slider */}
-      <View style={styles.settingItem}>
-        <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Volume</Text>
-          <Text style={styles.settingDescription}>Media volume level</Text>
+      <View className="bg-midnight-surface rounded-2xl p-4 mb-4 border-2 border-midnight-gray-dark">
+        <View className="mb-2.5">
+          <Text className="text-lg font-bold text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            Volume
+          </Text>
+          <Text className="text-sm text-neon-magenta mt-1.25"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Media volume level
+          </Text>
         </View>
-        <View style={styles.sliderContainer}>
-          <Text style={styles.volumeIcon}>🔈</Text>
+        <View className="flex-row items-center mt-2.5">
+          <Text className="text-2xl mx-2.5">🔈</Text>
           <Slider
-            style={styles.slider}
+            className="flex-1 h-10"
             minimumValue={0}
             maximumValue={1}
             value={volume}
@@ -197,35 +218,41 @@ const SettingsScreen = () => {
             maximumTrackTintColor="#333"
             thumbTintColor="#ffff00"
           />
-          <Text style={styles.volumeIcon}>🔊</Text>
+          <Text className="text-2xl mx-2.5">🔊</Text>
         </View>
-        <Text style={styles.volumeValue}>{Math.round(volume * 100)}%</Text>
+        <Text className="text-base font-bold text-neon-yellow text-center mt-1.25"
+          style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+        >
+          {Math.round(volume * 100)}%
+        </Text>
       </View>
 
       {/* Theme Toggle */}
-      <View style={styles.settingItem}>
-        <View style={styles.settingInfo}>
-          <Text style={styles.settingLabel}>Theme</Text>
-          <Text style={styles.settingDescription}>Light or dark mode</Text>
+      <View className="bg-midnight-surface rounded-2xl p-4 mb-4 border-2 border-midnight-gray-dark">
+        <View className="mb-2.5">
+          <Text className="text-lg font-bold text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            Theme
+          </Text>
+          <Text className="text-sm text-neon-magenta mt-1.25"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Light or dark mode
+          </Text>
         </View>
-        <View style={styles.themeButtons}>
+        <View className="flex-row justify-around mt-2.5">
           {THEME_OPTIONS.map((themeOption, index) => (
             <TouchableOpacity
               key={themeOption}
-              style={[
-                styles.themeButton,
-                theme === index && styles.themeButtonActive
-              ]}
+              className={`py-2 px-5 rounded-xl border-2 bg-midnight-bg ${theme === index ? 'border-neon-cyan bg-neon-cyan' : 'border-midnight-gray-dark'}`}
               onPress={async () => {
                 setTheme(index);
                 await saveSetting(SETTINGS_KEYS.THEME, index);
                 await triggerHaptic();
               }}
             >
-              <Text style={[
-                styles.themeButtonText,
-                theme === index && styles.themeButtonTextActive
-              ]}>
+              <Text className={`text-sm font-bold ${theme === index ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
                 {themeOption}
               </Text>
             </TouchableOpacity>
@@ -234,163 +261,24 @@ const SettingsScreen = () => {
       </View>
 
       {/* Spacer */}
-      <View style={styles.spacer} />
+      <View className="flex-1" />
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>LOGOUT 💀</Text>
+      <TouchableOpacity
+        className="bg-midnight-bg border-3 border-neon-magenta rounded-3xl py-4 items-center mb-5"
+        style={{ shadowColor: '#ff00ff', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 10 }}
+        onPress={handleLogout}
+      >
+        <Text className="text-neon-magenta text-xl font-bold tracking-wider"
+          style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+        >
+          LOGOUT 💀
+        </Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  loadingText: {
-    color: '#00ffea',
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 50,
-  },
-  title: {
-    color: '#ffff00',
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  settingItem: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: '#333',
-  },
-  settingInfo: {
-    marginBottom: 10,
-  },
-  settingLabel: {
-    color: '#00ffea',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  settingDescription: {
-    color: '#ff00ff',
-    fontSize: 14,
-    marginTop: 5,
-    textShadowColor: '#ff00ff',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
-  },
-  qualityButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-  },
-  qualityButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#333',
-    backgroundColor: '#0a0a0a',
-  },
-  qualityButtonActive: {
-    borderColor: '#00ffea',
-    backgroundColor: '#00ffea',
-  },
-  qualityButtonText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  qualityButtonTextActive: {
-    color: '#0a0a0a',
-  },
-  themeButtonTextActive: {
-    color: '#0a0a0a',
-  },
-  themeButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-  },
-  themeButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#333',
-    backgroundColor: '#0a0a0a',
-  },
-  themeButtonActive: {
-    borderColor: '#00ffea',
-    backgroundColor: '#00ffea',
-  },
-  themeButtonText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  sliderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  slider: {
-    flex: 1,
-    height: 40,
-  },
-  volumeIcon: {
-    fontSize: 24,
-    marginHorizontal: 10,
-  },
-  volumeValue: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 5,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  spacer: {
-    flex: 1,
-  },
-  logoutButton: {
-    backgroundColor: '#0a0a0a',
-    borderWidth: 3,
-    borderColor: '#ff00ff',
-    borderRadius: 30,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#ff00ff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-  },
-  logoutButtonText: {
-    color: '#ff00ff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-    textShadowColor: '#ff00ff',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-});
+
 
 export default SettingsScreen;

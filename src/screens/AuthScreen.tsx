@@ -95,7 +95,8 @@ export default function AuthScreen() {
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ flexGrow: 1 }}
       >
         <View className="flex-grow justify-center p-10">
           <View className="items-center mb-15">

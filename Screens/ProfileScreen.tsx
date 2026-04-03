@@ -144,23 +144,40 @@ const ProfileScreen = () => {
 
   const renderField = ({ label, value, onChangeText, secureTextEntry = false }: { label: string; value: string; onChangeText: (text: string) => void; secureTextEntry?: boolean }) => {
     return (
-      <View style={[styles.fieldContainer, { borderColor: isEditing ? '#00ffea' : '#333' }]}>
-        <Text style={styles.fieldLabel}>{label}</Text>
+      <View className="bg-midnight-surface rounded-2xl p-4 border-2"
+        style={{ borderColor: isEditing ? '#00ffea' : '#333' }}
+      >
+        <Text className="text-base font-bold text-neon-yellow mb-2"
+          style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+        >
+          {label}
+        </Text>
         {isEditing ? (
           <TextInput
-            style={[
-              styles.textInput,
-              Platform.OS === 'ios' && styles.iosInput
-            ]}
+            className="text-neon-cyan text-base p-2 border border-neon-cyan rounded-lg bg-midnight-bg"
+            style={{
+              height: Platform.OS === 'ios' ? 40 : undefined,
+              textShadowColor: '#00ffea',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 2
+            }}
             placeholder={value}
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
           />
         ) : (
-          <Text style={styles.fieldValue}>{value}</Text>
+          <Text className="text-base text-neon-cyan"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            {value}
+          </Text>
         )}
-        <View style={styles.toggleContainer}>
-          <Text style={styles.toggleLabel}>Public</Text>
+        <View className="flex-row justify-between items-center mt-2.5">
+          <Text className="text-sm text-neon-magenta"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Public
+          </Text>
           <Switch
             value={publicSettings[label.toLowerCase()]}
             onValueChange={(value) => {
@@ -172,7 +189,11 @@ const ProfileScreen = () => {
             thumbColor={isEditing ? '#ffff00' : '#00ffea'}
             trackColor={{ false: '#555', true: '#00ffea' }}
           />
-          <Text style={styles.toggleLabel}>Private</Text>
+          <Text className="text-sm text-neon-magenta"
+            style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 2 }}
+          >
+            Private
+          </Text>
         </View>
       </View>
     );
@@ -210,70 +231,100 @@ const ProfileScreen = () => {
       </View>
 
       {/* Profile Fields */}
-      <View style={styles.fieldsContainer}>
+      <View className="mb-6">
         {isEditing ? (
           <>
-            <Text style={styles.editModeLabel}>EDIT MODE 🔥</Text>
-            <Text style={styles.hintText}>Tap fields to edit • Switches control privacy</Text>
+            <Text className="text-xl font-bold text-neon-yellow mb-2.5"
+              style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+            >
+              EDIT MODE 🔥
+            </Text>
+            <Text className="text-sm text-neon-magenta mb-4"
+              style={{ textShadowColor: '#ff00ff', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              Tap fields to edit • Switches control privacy
+            </Text>
           </>
         ) : (
-          <Text style={styles.viewModeLabel}>PROFILE VIEW</Text>
+          <Text className="text-xl font-bold text-neon-cyan mb-2.5"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+          >
+            PROFILE VIEW
+          </Text>
         )}
-        
-        <View style={styles.formContainer}>
-          <View style={styles.fieldRow}>
-            {renderField({ 
-              label: 'Username', 
-              value: username, 
-              onChangeText: setUsername 
-            })}
-          </View>
-          
-          <View style={styles.fieldRow}>
-            {renderField({ 
-              label: 'Motto', 
-              value: motto, 
-              onChangeText: setMotto 
-            })}
-          </View>
-          
-          <View style={styles.fieldRow}>
-            {renderField({ 
-              label: 'Location', 
-              value: location, 
-              onChangeText: setLocation 
-            })}
-          </View>
-          
-          <View style={styles.fieldRow}>
-            {renderField({ 
-              label: 'Birthdate', 
-              value: birthdate, 
-              onChangeText: setBirthdate 
-            })}
-          </View>
+
+        <View className="gap-4">
+          {renderField({
+            label: 'Username',
+            value: username,
+            onChangeText: setUsername
+          })}
+
+          {renderField({
+            label: 'Motto',
+            value: motto,
+            onChangeText: setMotto
+          })}
+
+          {renderField({
+            label: 'Location',
+            value: location,
+            onChangeText: setLocation
+          })}
+
+          {renderField({
+            label: 'Birthdate',
+            value: birthdate,
+            onChangeText: setBirthdate
+          })}
         </View>
       </View>
 
       {/* Stats Section */}
-      <View style={styles.statsContainer}>
-        <Text style={styles.statsTitle}>STATS 💫</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>LEVEL</Text>
-            <Text style={styles.statValue}>LVL {level}</Text>
+      <View className="bg-midnight-surface rounded-3xl p-5 border-2 border-neon-cyan mb-6">
+        <Text className="text-2xl font-bold text-neon-cyan text-center mb-4"
+          style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 5 }}
+        >
+          STATS 💫
+        </Text>
+        <View className="flex-row justify-around">
+          <View className="items-center">
+            <Text className="text-base font-bold text-neon-yellow mb-1.25"
+              style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              LEVEL
+            </Text>
+            <Text className="text-lg font-bold text-neon-cyan"
+              style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              LVL {level}
+            </Text>
           </View>
-          
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>SCORE</Text>
-            <Text style={styles.statValue}>{lifetimeScore.toLocaleString()} pts</Text>
+
+          <View className="items-center">
+            <Text className="text-base font-bold text-neon-yellow mb-1.25"
+              style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              SCORE
+            </Text>
+            <Text className="text-lg font-bold text-neon-cyan"
+              style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              {lifetimeScore.toLocaleString()} pts
+            </Text>
           </View>
-          
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>BADGES</Text>
-            <View style={styles.badgesRow}>
+
+          <View className="items-center">
+            <Text className="text-base font-bold text-neon-yellow mb-1.25"
+              style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+            >
+              BADGES
+            </Text>
+            <View className="mt-2.5">
               {getEarnedBadges(level, lifetimeScore).map((badge) => (
-                <Text key={badge.id} style={styles.badgeText}>
+                <Text key={badge.id} className="text-base font-bold text-neon-yellow"
+                  style={{ textShadowColor: '#ffff00', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+                >
                   {badge.emoji} {badge.label}
                 </Text>
               ))}
@@ -284,259 +335,31 @@ const ProfileScreen = () => {
 
       {/* Save Button */}
       {isEditing ? (
-        <TouchableOpacity 
-          onPress={saveChanges} 
-          style={[
-            styles.saveButton,
-            !loading && styles.saveButtonEnabled
-          ]}
+        <TouchableOpacity
+          onPress={saveChanges}
+          className={`bg-midnight-bg border-2 border-neon-magenta rounded-3xl py-4 px-7.5 items-center justify-center ${!loading ? 'bg-neon-magenta' : ''}`}
           disabled={loading}
         >
-          <Text style={styles.saveButtonText}>
+          <Text className="text-midnight-bg text-lg font-bold tracking-wider">
             SAVE CHANGES 🔥
           </Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity 
-          onPress={() => setIsEditing(true)} 
-          style={styles.editButton}
+        <TouchableOpacity
+          onPress={() => setIsEditing(true)}
+          className="bg-midnight-bg border-2 border-neon-cyan rounded-3xl py-4 px-7.5 items-center justify-center"
         >
-          <Text style={styles.editButtonText}>EDIT PROFILE ✏️</Text>
+          <Text className="text-neon-cyan text-lg font-bold tracking-wider"
+            style={{ textShadowColor: '#00ffea', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 3 }}
+          >
+            EDIT PROFILE ✏️
+          </Text>
         </TouchableOpacity>
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  centeredLoader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#00ffea',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  profileImageContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 3,
-    borderColor: '#ff00ff',
-    marginBottom: 10,
-  },
-  defaultProfileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#1a1a1a',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#ff00ff',
-  },
-  editImageButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#0a0a0a',
-    borderWidth: 2,
-    borderColor: '#ffff00',
-    borderRadius: 20,
-    padding: 5,
-  },
-  fieldsContainer: {
-    marginBottom: 25,
-  },
-  editModeLabel: {
-    color: '#ffff00',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  viewModeLabel: {
-    color: '#00ffea',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  hintText: {
-    color: '#ff00ff',
-    fontSize: 14,
-    marginBottom: 15,
-    textShadowColor: '#ff00ff',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  formContainer: {
-    gap: 15,
-  },
-  fieldRow: {
-    marginVertical: 5,
-  },
-  fieldContainer: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 15,
-    padding: 15,
-    borderWidth: 2,
-    borderColor: '#333',
-  },
-  fieldLabel: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  fieldValue: {
-    color: '#00ffea',
-    fontSize: 16,
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  textInput: {
-    color: '#00ffea',
-    fontSize: 16,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#00ffea',
-    borderRadius: 8,
-    backgroundColor: '#0a0a0a',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
-  },
-  iosInput: {
-    height: 40,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  toggleLabel: {
-    color: '#ff00ff',
-    fontSize: 14,
-    textShadowColor: '#ff00ff',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
-  },
-  statsContainer: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: '#00ffea',
-    marginBottom: 25,
-  },
-  statsTitle: {
-    color: '#00ffea',
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 15,
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statLabel: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  statValue: {
-    color: '#00ffea',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  badgesRow: {
-    marginTop: 10,
-  },
-  badgeText: {
-    color: '#ffff00',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textShadowColor: '#ffff00',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-  saveButton: {
-    backgroundColor: '#0a0a0a',
-    borderWidth: 2,
-    borderColor: '#ff00ff',
-    borderRadius: 30,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonEnabled: {
-    backgroundColor: '#ff00ff',
-  },
-  saveButtonText: {
-    color: '#0a0a0a',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  editButton: {
-    backgroundColor: '#0a0a0a',
-    borderWidth: 2,
-    borderColor: '#00ffea',
-    borderRadius: 30,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editButtonText: {
-    color: '#00ffea',
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-    textShadowColor: '#00ffea',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
-});
+
 
 export default ProfileScreen;

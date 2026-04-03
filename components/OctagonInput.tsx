@@ -3,7 +3,6 @@ import {
   View,
   TextInput,
   TextInputProps,
-  StyleSheet,
   Dimensions,
 } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
@@ -52,8 +51,8 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
   }));
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.inputWrapper, { transform: [{ scale: scale.value }] }]}>
+    <View className="w-full my-2.5">
+      <Animated.View className="relative self-center mb-2" style={{ transform: [{ scale: scale.value }] }}>
         {/* Outer glow gradient */}
         <Defs>
           <LinearGradient id="glowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -65,7 +64,8 @@ const OctagonInput: React.FC<OctagonInputProps> = ({
 
         {/* Glow ring */}
         <Svg
-          style={[styles.glowSvg, { opacity: glowOpacity.value }]}
+          className="absolute -top-2.5 -left-2.5"
+          style={{ opacity: glowOpacity.value }}
           width={OCTAGON_SIZE + 20}
           height={OCTAGON_SIZE + 20}
           viewBox={`0 0 ${OCTAGON_SIZE + 20} ${OCTAGON_SIZE + 20}`}

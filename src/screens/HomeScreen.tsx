@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { auth, db } from '../services/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { colors } from '../theme/colors';
@@ -20,7 +20,7 @@ interface UserData {
 }
 
 export default function HomeScreen() {
-  const navigation = useNavigation<any>();
+const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +44,7 @@ export default function HomeScreen() {
   }, []);
 
   const handlePlay = () => {
-    navigation.navigate('Game');
+router.push('/(tabs)/game');
   };
 
   if (loading) {
@@ -81,13 +81,13 @@ export default function HomeScreen() {
       <View style={styles.quickActions}>
         <TouchableOpacity 
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Leaderboard')}
+          onPress={() => router.push('/(tabs)/leaderboard')}
         >
           <Text style={styles.actionButtonText}>Leaderboard 🏆</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.actionButton}
-          onPress={() => navigation.navigate('Search')}
+          onPress={() => router.push('/(tabs)/search')}
         >
           <Text style={styles.actionButtonText}>Find Players 🔍</Text>
         </TouchableOpacity>

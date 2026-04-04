@@ -62,7 +62,7 @@ export default function AuthEntry() {
       setIsAuthenticated(true);
 
       if (tutorialComplete) {
-        router.replace('/(tabs)/game');
+        router.replace('/(tabs)');
         return;
       }
 
@@ -79,7 +79,7 @@ export default function AuthEntry() {
       setIsAuthenticated(true);
 
       if (tutorialComplete) {
-        router.replace('/(tabs)/game');
+        router.replace('/(tabs)');
         return;
       }
 
@@ -97,7 +97,7 @@ export default function AuthEntry() {
       setShowSignup(false);
 
       if (tutorialComplete) {
-        router.replace('/(tabs)/game');
+        router.replace('/(tabs)');
         return;
       }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Camera, CameraType, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { auth, db } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
@@ -31,7 +31,7 @@ export default function GameScreen() {
   const [particleEmojis, setParticleEmojis] = useState<string[]>([]);
   const [lastLevel, setLastLevel] = useState(0);
 
-  const scoreIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scoreIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const warningStartTime = useRef<number | null>(null);
   const eyesClosedStartTime = useRef<number | null>(null);
   const outOfViewStartTime = useRef<number | null>(null);
@@ -317,9 +317,9 @@ export default function GameScreen() {
           {renderChecklistItem('Game face', gameFaceReady)}
 
           <View className="mt-10 rounded-3xl overflow-hidden border-3 border-neon-cyan h-[360px] bg-black">
-            <CameraView
+            <Camera
               className="absolute inset-0"
-              facing="front"
+              type={CameraType.front}
               onCameraReady={() => setIsReady(true)}
             />
             {faceState === 'not_detected' && (
@@ -358,7 +358,7 @@ export default function GameScreen() {
       </View>
 
       <View className="absolute top-12 right-5 w-28 h-24 border-2 border-neon-cyan rounded-3xl overflow-hidden bg-black">
-        <CameraView className="absolute inset-0" facing="front" />
+        <Camera className="absolute inset-0" type={CameraType.front} />
         {faceState === 'warning' && (
           <View className="absolute inset-0 bg-overlay-warning justify-center items-center border-2 border-warning-red py-2 px-1">
             <Text className="text-xs font-bold text-midnight-white text-center">

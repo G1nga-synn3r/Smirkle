@@ -44,7 +44,7 @@ const router = useRouter();
   }, []);
 
   const handlePlay = () => {
-router.push('/(tabs)/game');
+    router.push('/(tabs)');
   };
 
   if (loading) {

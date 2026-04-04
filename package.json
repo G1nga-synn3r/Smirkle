@@ -2,6 +2,7 @@
   "name": "smirkle",
   "version": "1.0.0",
   "main": "expo-router/entry",
+  "type": "module",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -14,6 +15,7 @@
     "@react-native-community/netinfo": "11.5.2",
     "@react-native-community/slider": "5.1.2",
     "babel-preset-expo": "~55.0.8",
+    "debug": "^4.4.3",
     "expo": "~55.0.11",
     "expo-av": "^16.0.8",
     "expo-camera": "~55.0.13",
@@ -25,6 +27,7 @@
     "expo-linking": "~55.0.11",
     "expo-router": "~55.0.10",
     "expo-status-bar": "~55.0.5",
+    "fetch-nodeshim": "^0.4.10",
     "firebase": "^12.11.0",
     "nativewind": "^4.2.3",
     "react": "19.2.4",
@@ -44,7 +47,9 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@expo/cli": "^55.0.21",
     "@types/react": "~19.2.2",
+    "terminal-link": "^5.0.0",
     "typescript": "~5.9.2"
   },
   "expo": {

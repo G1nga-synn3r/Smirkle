@@ -1,56 +1,45 @@
 export default ({ config }) => ({
   ...config,
-  expo: {
-    name: 'Smirkle',
-    slug: 'Smirkle',
-    version: '1.0.0',
-    orientation: 'portrait',
-    icon: 'assets/icon.png',
-    userInterfaceStyle: 'dark',
-    splash: {
-      image: 'assets/splash-icon.png',
-      resizeMode: 'contain',
-      backgroundColor: '#0a0a0a',
-    },
-    ios: {
-      supportsTablet: true,
-      bundleIdentifier: 'com.gingervaile.Smirkle',
-      infoPlist: {
-        NSCameraUsageDescription: 'Allow Smirkle to access your camera for gameplay and video processing.',
-      },
-    },
-    android: {
-      adaptiveIcon: {
-        backgroundColor: '#0a0a0a',
-        foregroundImage: 'assets/android-icon-foreground.png',
-        backgroundImage: 'assets/android-icon-background.png',
-        monochromeImage: 'assets/android-icon-monochrome.png',
-      },
-      package: 'com.gingervaile.Smirkle',
-      permissions: ['CAMERA'],
-    },
-    web: {
-      favicon: 'assets/favicon.png',
-    },
-    plugins: [
-      [
-        'react-native-vision-camera',
-        {
-          cameraPermissionText: 'Allow Smirkle to access your camera for real-time face detection during gameplay.',
-          microphonePermissionText: 'Allow Smirkle to access microphone for potential gameplay features.',
-        },
-      ],
-      [
-        'expo-camera',
-        {
-          cameraPermission: 'Allow Smirkle to access your camera to detect smiles and smirks during gameplay.',
-        },
-      ],
-    ],
-    extra: {
-      eas: {
-        projectId: 'aac33832-383b-4727-bdcf-b94171e82679',
-      },
-    },
+  name: 'Smirkle',
+  slug: 'smirkle',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+  userInterfaceStyle: 'automatic',
+  splash: {
+    image: './assets/splash-icon.png',
+    resizeMode: 'contain',
+    backgroundColor: '#ffffff'
   },
+  updates: {
+    fallbackToCacheTimeout: 0
+  },
+  assetBundlePatterns: [
+    '**/*'
+  ],
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: 'com.gingasynner.smirkle'
+  },
+  android: {
+    package: 'com.gingasynner.smirkle',
+    adaptiveIcon: {
+      foregroundImage: './assets/android-icon-foreground.png',
+      backgroundImage: './assets/android-icon-background.png'
+    },
+    permissions: [
+      'CAMERA',
+      'READ_EXTERNAL_STORAGE',
+      'WRITE_EXTERNAL_STORAGE'
+    ]
+  },
+  plugins: [
+    'expo-camera',
+    'expo-face-detector'
+  ],
+  extra: {
+    eas: {
+      projectId: 'aac33832-383b-4727-bdcf-b94171e82679'
+    }
+  }
 });

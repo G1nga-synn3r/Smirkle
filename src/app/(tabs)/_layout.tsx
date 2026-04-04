@@ -72,14 +72,6 @@ export default function TabLayout() {
           tabBarLabel: '⚙️',
         }} 
       />
-      <Tabs.Screen 
-        name="game" 
-        options={{ 
-          title: 'Game',
-          tabBarIcon: ({ color }) => <Ionicons name="game-controller" size={24} color={color} />,
-          tabBarLabel: '🎮',
-        }} 
-      />
     </Tabs>
   );
 }

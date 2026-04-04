@@ -1,50 +1,106 @@
-import React, { useState } from 'react';
-import { Modal, View, ScrollView, Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React from 'react';
+import {
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import tutorialFlowchart from '../../assets/tutorial-flowchart.png';
 
-export default function TutorialOverlay() {
-  const [visible, setVisible] = useState(true);
+interface TutorialOverlayProps {
+  onComplete: () => void;
+}
 
-  // Placeholder for front-camera detection logic (Face/Eyes)
-  // Placeholder for score incrementing at 111 points per second
-  // Placeholder for 'Fail' message logic if the user smiles or leaves the frame
-
+export default function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
   return (
-    <Modal visible={visible} animationType="fade" transparent>
-      <View style={styles.overlay}>
+    <View style={styles.overlay}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Tutorial</Text>
+        <Text style={styles.subtitle}>
+          Learn the circular flow before you jump into the game.
+        </Text>
+
         <ScrollView
-          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          horizontal={false} // Allow vertical scrolling primarily
-          showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
-          zoomEnabled={true} // Enable pinch-to-zoom for panning
-          maximumZoomScale={3}
-          minimumZoomScale={0.5}
+          bounces={false}
         >
-          <Image
-            source={require('../../assets/tutorial-flowchart.png')}
-            style={styles.image}
-            resizeMode="contain"
-          />
+          <View style={styles.imageWrapper}>
+            <Image
+              source={tutorialFlowchart}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          </View>
         </ScrollView>
-        <TouchableOpacity style={styles.closeButton} onPress={() => setVisible(false)}>
-          <Text style={styles.closeText}>Got it!</Text>
+
+        <TouchableOpacity style={styles.ctaButton} onPress={onComplete}>
+          <Text style={styles.ctaText}>Got it!</Text>
         </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
   );
 }
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)', // Semi-transparent dark background
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(5, 8, 22, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 18,
   },
-  scrollView: {
-    flex: 1,
+  container: {
+    width: '100%',
+    maxWidth: 760,
+    backgroundColor: '#0b1126',
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#00ffea',
+    overflow: 'hidden',
+    shadowColor: '#00ffea',
+    shadowOpacity: 0.24,
+    shadowRadius: 30,
+    elevation: 20,
+  },
+  title: {
+    color: '#00ffea',
+    fontSize: 28,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginTop: 24,
+  },
+  subtitle: {
+    color: '#cbd5e1',
+    textAlign: 'center',
+    fontSize: 15,
+    marginHorizontal: 24,
+    marginTop: 12,
+    marginBottom: 18,
+    lineHeight: 22,
   },
   scrollContent: {
-    flexGrow: 1,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  imageWrapper: {
+    width: width - 64,
+    maxWidth: 680,
+    height: (width - 64) * 0.95,
+    backgroundColor: '#020617',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: '#334155',
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -52,20 +108,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  closeButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
+  ctaButton: {
+    margin: 18,
     backgroundColor: '#00ffea',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: '#ffff00',
+    borderRadius: 24,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  closeText: {
-    color: '#0a0a0a',
-    fontSize: 16,
-    fontWeight: 'bold',
+  ctaText: {
+    color: '#050816',
+    fontSize: 17,
+    fontWeight: '800',
   },
 });

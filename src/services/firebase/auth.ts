@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInAnonymously,
+  sendPasswordResetEmail,
   updateProfile,
   UserCredential,
   User
@@ -35,6 +36,13 @@ export const authService = {
   guestLogin: async (): Promise<UserCredential> => {
     const credential = await signInAnonymously(auth);
     return credential;
+  },
+
+  /**
+   * Reset password via email
+   */
+  resetPassword: async (email: string): Promise<void> => {
+    await sendPasswordResetEmail(auth, email);
   },
 
   /**

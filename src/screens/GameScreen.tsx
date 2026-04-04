@@ -7,7 +7,7 @@ import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { getRandomApprovedVideo } from '../utils/videoService';
 import EmojiParticles from '../../components/EmojiParticles';
 import YouTubePlayer from '../../components/YouTubePlayer';
-import { colors } from '../theme/colors';
+import { colors } from '../../theme/colors';
 import { useFaceDetection } from '../hooks/useFaceDetection';
 
 const { width, height } = Dimensions.get('window');

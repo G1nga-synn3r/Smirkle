@@ -99,10 +99,10 @@ export default function LoginScreen({ onLogin, onGuestLogin, onForgotPassword, o
         <Text style={styles.orText}>or continue with</Text>
 
         <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialButton} onPress={handleSubmit} disabled={loading}>
+          <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Google Sign-In', 'Coming soon!')} disabled={loading}>
             <Text style={styles.socialButtonText}>Google</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton} onPress={handleSubmit} disabled={loading}>
+          <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Apple Sign-In', 'Coming soon!')} disabled={loading}>
             <Text style={styles.socialButtonText}>Apple</Text>
           </TouchableOpacity>
         </View>
@@ -238,5 +238,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  secondaryButton: {
+    marginTop: 12,
+    backgroundColor: '#334155',
+    borderRadius: 20,
+    paddingVertical: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#64748b',
+  },
+  secondaryButtonText: {
+    color: '#f8fafc',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  linkButton: {
+    marginTop: 12,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  linkButtonText: {
+    color: '#00ffea',
+    fontSize: 15,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
 });

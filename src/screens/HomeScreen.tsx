@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { auth, db } from '../services/firebase/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { colors } from '../theme/colors';
+import { colors } from '../../theme/colors';
 
 interface UserData {
   username: string;

@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import tutorialFlowchart from '../../assets/tutorial-flowchart.png';
+import tutorialFlowchart from '../../assets/tutorial_flowchart.png';
 
 interface TutorialOverlayProps {
   onComplete: () => void;

@@ -8,7 +8,7 @@ export default ({ config }) => ({
     icon: './assets/icon.png',
     userInterfaceStyle: 'dark',
     splash: {
-      image: './assets/splash-icon.png',
+      image: './assets/splash_icon.png',
       resizeMode: 'contain',
       backgroundColor: '#0a0a0a',
     },
@@ -20,12 +20,6 @@ export default ({ config }) => ({
       },
     },
     android: {
-      adaptiveIcon: {
-        backgroundColor: '#0a0a0a',
-        foregroundImage: './assets/android-icon-foreground.png',
-        backgroundImage: './assets/android-icon-background.png',
-        monochromeImage: './assets/android-icon-monochrome.png',
-      },
       package: 'com.gingervaile.Smirkle',
       permissions: ['CAMERA'],
       minSdkVersion: 28,

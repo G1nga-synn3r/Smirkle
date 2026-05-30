@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "260360951119",
+    "project_id": "smirkle-922e2",
+    "storage_bucket": "smirkle-922e2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260360951119:android:8fc2dc6404a4fcbb2c613a",
+        "android_client_info": {
+          "package_name": "com.soulless.smirkle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260360951119-h0f0tgo0gbhrgri7ehnt00kb7bn4v87a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfMUsd6LbCLYV60kIS72g_HanJe7C07xg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260360951119-h0f0tgo0gbhrgri7ehnt00kb7bn4v87a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

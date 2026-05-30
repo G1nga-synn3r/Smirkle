@@ -31,6 +31,7 @@
     "fetch-nodeshim": "^0.4.10",
     "firebase": "^12.11.0",
     "nativewind": "^4.2.3",
+    "node-modules": "^1.0.1",
     "react": "19.2.4",
     "react-do": "^1.1.6",
     "react-dom": "19.2.0",

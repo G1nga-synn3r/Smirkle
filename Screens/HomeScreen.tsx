@@ -8,7 +8,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import TutorialOverlay from '../../src/components/common/TutorialOverlay';
+import TutorialOverlay from '../src/components/common/TutorialOverlay';
 
 interface UserData {
   username: string;
@@ -16,15 +16,6 @@ interface UserData {
   lifetimeScore: number;
   badges: string[];
   hasSeenTutorial?: boolean;
-}
-
-
-
-interface UserData {
-  username: string;
-  level: number;
-  lifetimeScore: number;
-  badges: string[];
 }
 
 export default function HomeScreen() {
@@ -126,38 +117,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </View>
-
-        <StyledTouchableOpacity
-          className="mt-15 bg-neon-cyan py-8 px-12 rounded-2xl border-4 border-neon-magenta"
-          style={{ shadowColor: '#00ffea', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 30, elevation: 20 }}
-          onPress={handlePlay}
-        >
-          <StyledText className="text-2xl font-black text-midnight-bg tracking-widest"
-                style={{ textShadowColor: '#ff00ff', textShadowRadius: 10 }}>😎 PLAY SMIRKLE</StyledText>
-        </TouchableOpacity>
-
-        <StyledView className="flex-row mt-10 gap-4">
-          <StyledTouchableOpacity
-            className="bg-midnight-bg py-4 px-5 rounded-xl border-3 border-neon-yellow"
-            style={{ shadowColor: '#ffff00', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10, elevation: 8 }}
-            onPress={() => navigation.navigate('Leaderboard')}
-          >
-            <StyledText className="text-sm font-extrabold text-neon-yellow"
-                  style={{ textShadowColor: '#ffff00', textShadowRadius: 5 }}>Leaderboard 🏆</StyledText>
-          </TouchableOpacity>
-          <StyledTouchableOpacity
-            className="bg-midnight-bg py-4 px-5 rounded-xl border-3 border-neon-yellow"
-            style={{ shadowColor: '#ffff00', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10, elevation: 8 }}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <StyledText className="text-sm font-extrabold text-neon-yellow"
-                  style={{ textShadowColor: '#ffff00', textShadowRadius: 5 }}>Find Players 🔍</StyledText>
-          </TouchableOpacity>
-        </View>
-      </View>
     </>
   );
 
 }
-
-

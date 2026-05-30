@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:260360951119:android:8fc2dc6404a4fcbb2c613a",
+        "mobilesdk_app_id": "1:260360951119:android:8c027c62040e4f0e2c613a",
         "android_client_info": {
-          "package_name": "com.soulless.smirkle"
+          "package_name": "com.gingervaile.Smirkle"
         }
       },
       "oauth_client": [

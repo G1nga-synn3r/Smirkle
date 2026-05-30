@@ -244,7 +244,7 @@ const FriendsScreen = () => {
           data={friends}
           renderItem={renderFriendItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 20 }}
           ListEmptyComponent={
             <Text className="text-base text-neon-magenta text-center mt-7.5">
               No friends yet 😕 Search for players to add friends!
@@ -256,7 +256,7 @@ const FriendsScreen = () => {
           data={pendingRequests}
           renderItem={renderRequestItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={{ paddingBottom: 20 }}
           ListEmptyComponent={
             <Text className="text-base text-neon-magenta text-center mt-7.5">No pending requests</Text>
           }

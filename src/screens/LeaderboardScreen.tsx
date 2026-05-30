@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../../firebase';
@@ -18,15 +19,24 @@ const COLORS = {
   neonMagenta: '#ff00ff',
 };
 
+interface LeaderboardUser {
+  uid: string;
+  username: string;
+  profileImageUrl: string | null;
+  score: number;
+  level: number;
+  index: number;
+}
+
 export default function LeaderboardScreen() {
   const navigation = useNavigation();
-  const [sessionLeaderboard, setSessionLeaderboard] = useState([]);
-  const [lifetimeLeaderboard, setLifetimeLeaderboard] = useState([]);
+  const [sessionLeaderboard, setSessionLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [lifetimeLeaderboard, setLifetimeLeaderboard] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState('session'); // 'session' or 'lifetime'
+  const [activeTab, setActiveTab] = useState<'session' | 'lifetime'>('session');
 
-  const fetchLeaderboard = async (type) => {
+  const fetchLeaderboard = async (type: 'session' | 'lifetime') => {
     setLoading(true);
     try {
       let q;
@@ -45,9 +55,9 @@ export default function LeaderboardScreen() {
       }
 
       const querySnapshot = await getDocs(q);
-      const leaderboard = [];
+      const leaderboard: LeaderboardUser[] = [];
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach((doc: any, index: number) => {
         const data = doc.data();
         leaderboard.push({
           uid: doc.id,
@@ -55,6 +65,7 @@ export default function LeaderboardScreen() {
           profileImageUrl: data.profileImageUrl || null,
           score: type === 'session' ? data.highestSessionScore : data.lifetimeScore,
           level: data.level || 1,
+          index: index + 1,
         });
       });
 
@@ -80,7 +91,7 @@ export default function LeaderboardScreen() {
     fetchLeaderboard(activeTab);
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: LeaderboardUser }) => (
     <View style={styles.leaderboardItem}>
       <View style={styles.rankContainer}>
         <Text style={styles.rankText}>#{item.index}</Text>
@@ -88,7 +99,6 @@ export default function LeaderboardScreen() {
       <View style={styles.userInfo}>
         {item.profileImageUrl ? (
           <View style={styles.profileImage}>
-            {/* Image would go here */}
           </View>
         ) : (
           <View style={styles.defaultProfileImage}>
@@ -103,7 +113,7 @@ export default function LeaderboardScreen() {
         </View>
       </View>
       <View style={styles.scoreContainer}>
-        <Text style={styles.scoreText}>{item.score.toLocaleString()}</Text>
+        <Text style={styles.scoreText}>{item.score?.toLocaleString()}</Text>
       </View>
     </View>
   );
@@ -118,7 +128,7 @@ export default function LeaderboardScreen() {
           ]}
           onPress={() => setActiveTab('session')}
         >
-          <Text style={styles.tabButtonText}>Session High Scores</Text>
+          <Text style={[styles.tabButtonText, { color: activeTab === 'session' ? COLORS.background : COLORS.neonCyan }]}>Session High Scores</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -127,7 +137,7 @@ export default function LeaderboardScreen() {
           ]}
           onPress={() => setActiveTab('lifetime')}
         >
-          <Text style={styles.tabButtonText}>Lifetime Scores</Text>
+          <Text style={[styles.tabButtonText, { color: activeTab === 'lifetime' ? COLORS.background : COLORS.neonCyan }]}>Lifetime Scores</Text>
         </TouchableOpacity>
       </View>
 
@@ -138,8 +148,8 @@ export default function LeaderboardScreen() {
       ) : (
         <FlatList
           data={activeTab === 'session' ? sessionLeaderboard : lifetimeLeaderboard}
-          keyExtractor={(item, index) => `${item.uid}-${index}`}
-          renderItem={({ item, index }) => renderItem({ item, index: index + 1 })}
+          keyExtractor={(item) => item.uid}
+          renderItem={renderItem}
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>No data available</Text>
@@ -177,7 +187,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.neonCyan,
   },
   tabButtonText: {
-    color: activeTab === 'session' ? COLORS.background : COLORS.neonCyan,
     fontWeight: 'bold',
     fontSize: 16,
   },

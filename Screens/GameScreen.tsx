@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Camera, CameraType, useCameraPermissions } from 'expo-camera';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { auth, db } from '../firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import EmojiParticles from '../components/EmojiParticles';
 import YouTubePlayer from '../components/YouTubePlayer';
+import { sessionService } from '../src/services/firebase/sessions';
+import { useInternetConnectivity } from '../src/hooks/useInternetConnectivity';
 
 type FaceState = 'not_detected' | 'detected' | 'warning' | 'failed';
+type FailReason = 'smile' | 'eyes_closed' | 'face_lost' | 'manual_stop' | 'internet_lost';
 
 export default function GameScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -30,11 +33,14 @@ export default function GameScreen() {
   const [showParticles, setShowParticles] = useState(false);
   const [particleEmojis, setParticleEmojis] = useState<string[]>([]);
   const [lastLevel, setLastLevel] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [warningCount, setWarningCount] = useState(0);
 
   const scoreIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const warningStartTime = useRef<number | null>(null);
   const eyesClosedStartTime = useRef<number | null>(null);
   const outOfViewStartTime = useRef<number | null>(null);
+  const failReasonRef = useRef<FailReason | null>(null);
 
   const checklistComplete = faceVisible && eyesOpen && gameFaceReady;
 
@@ -61,9 +67,11 @@ export default function GameScreen() {
     setFaceVisible(false);
     setEyesOpen(false);
     setGameFaceReady(false);
+    setWarningCount(0);
     warningStartTime.current = null;
     eyesClosedStartTime.current = null;
     outOfViewStartTime.current = null;
+    failReasonRef.current = null;
   };
 
   useEffect(() => {
@@ -94,6 +102,7 @@ export default function GameScreen() {
 
         const isWarning = currentSmiling || currentEyesClosed || currentOutOfView;
         if (isWarning) {
+          setWarningCount(prev => prev + 1);
           if (warningStartTime.current === null) {
             warningStartTime.current = Date.now();
           }
@@ -114,6 +123,9 @@ export default function GameScreen() {
     const warningDuration = warningStartTime.current ? Date.now() - warningStartTime.current : 0;
     if (faceState === 'warning' && warningDuration > 1000) {
       if (isSmiling || eyesClosed || isOutOfView) {
+        if (isSmiling) failReasonRef.current = 'smile';
+        else if (eyesClosed) failReasonRef.current = 'eyes_closed';
+        else failReasonRef.current = 'face_lost';
         triggerFail();
       }
     }
@@ -128,6 +140,7 @@ export default function GameScreen() {
       }
       const closedDuration = Date.now() - eyesClosedStartTime.current;
       if (closedDuration > 2000) {
+        failReasonRef.current = 'eyes_closed';
         triggerFail();
       }
     } else {
@@ -144,6 +157,7 @@ export default function GameScreen() {
       }
       const outDuration = Date.now() - outOfViewStartTime.current;
       if (outDuration > 2000) {
+        failReasonRef.current = 'face_lost';
         triggerFail();
       }
     } else {
@@ -174,19 +188,37 @@ export default function GameScreen() {
     }
   }, [score, lastLevel]);
 
-  const startGame = () => {
+  const startGame = async () => {
     const randomVideo = funnyVideos[Math.floor(Math.random() * funnyVideos.length)];
     setCurrentVideoId(randomVideo);
+    
+    const user = auth.currentUser;
+    const newSessionId = await sessionService.createSession({
+      uid: user?.uid || null,
+      isGuest: !user,
+      videoId: randomVideo,
+      score: 0,
+      warningCount: 0,
+      smileTriggered: false,
+      eyesClosedTriggered: false,
+      faceLostTriggered: false,
+    });
+    setSessionId(newSessionId);
+    
     setGameStarted(true);
     setScore(0);
+    setWarningCount(0);
     warningStartTime.current = null;
     eyesClosedStartTime.current = null;
     outOfViewStartTime.current = null;
+    failReasonRef.current = null;
     setFaceState('detected');
   };
 
-  const triggerFail = async () => {
+  const triggerFail = async (reason?: FailReason) => {
     if (!hasFailed) {
+      const failReason = reason || failReasonRef.current || 'manual_stop';
+      
       setHasFailed(true);
       setFaceState('failed');
       setIsVideoPlaying(false);
@@ -220,6 +252,10 @@ export default function GameScreen() {
               });
             }
           }
+        }
+
+        if (sessionId) {
+          await sessionService.endSession(sessionId, score, false, failReason);
         }
       } catch (error) {
         console.error('Error saving score:', error);
@@ -317,9 +353,9 @@ export default function GameScreen() {
           {renderChecklistItem('Game face', gameFaceReady)}
 
           <View className="mt-10 rounded-3xl overflow-hidden border-3 border-neon-cyan h-[360px] bg-black">
-            <Camera
-              className="absolute inset-0"
-              type={CameraType.front}
+            <CameraView
+              style={StyleSheet.absoluteFill}
+              facing="front"
               onCameraReady={() => setIsReady(true)}
             />
             {faceState === 'not_detected' && (
@@ -347,7 +383,7 @@ export default function GameScreen() {
     <View className="flex-1 bg-black">
       <YouTubePlayer
         videoId={currentVideoId}
-        className="absolute inset-0"
+        style={StyleSheet.absoluteFill}
         onStateChange={onYouTubeChangeState}
       />
 
@@ -358,7 +394,7 @@ export default function GameScreen() {
       </View>
 
       <View className="absolute top-12 right-5 w-28 h-24 border-2 border-neon-cyan rounded-3xl overflow-hidden bg-black">
-        <Camera className="absolute inset-0" type={CameraType.front} />
+        <CameraView style={StyleSheet.absoluteFill} facing="front" />
         {faceState === 'warning' && (
           <View className="absolute inset-0 bg-overlay-warning justify-center items-center border-2 border-warning-red py-2 px-1">
             <Text className="text-xs font-bold text-midnight-white text-center">
@@ -372,7 +408,7 @@ export default function GameScreen() {
 
       <TouchableOpacity
         className="absolute bottom-12 self-center bg-overlay-warning py-3 px-8 rounded-3xl border-2 border-warning-red"
-        onPress={triggerFail}
+        onPress={() => triggerFail('manual_stop')}
       >
         <Text className="text-base font-bold text-midnight-white">STOP</Text>
       </TouchableOpacity>

@@ -10,7 +10,7 @@ import { sessionService } from '../src/services/firebase/sessions';
 import { useInternetConnectivity } from '../src/hooks/useInternetConnectivity';
 
 type FaceState = 'not_detected' | 'detected' | 'warning' | 'failed';
-type FailReason = 'smile' | 'eyes_closed' | 'face_lost' | 'manual_stop' | 'internet_lost';
+type FailReason = 'smile' | 'eyes_closed' | 'face_lost' | 'manual_stop' | 'internet_lost' | 'video_fail';
 
 export default function GameScreen() {
   const [permission, requestPermission] = useCameraPermissions();
@@ -35,6 +35,12 @@ export default function GameScreen() {
   const [lastLevel, setLastLevel] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [warningCount, setWarningCount] = useState(0);
+  const [internetLostTriggered, setInternetLostTriggered] = useState(false);
+  const internetLostStartTime = useRef<number | null>(null);
+  const videoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const videoErrorReceived = useRef(false);
+
+  const { isConnected } = useInternetConnectivity();
 
   const scoreIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const warningStartTime = useRef<number | null>(null);
@@ -71,6 +77,9 @@ export default function GameScreen() {
     warningStartTime.current = null;
     eyesClosedStartTime.current = null;
     outOfViewStartTime.current = null;
+    internetLostStartTime.current = null;
+    videoTimeoutRef.current = null;
+    videoErrorReceived.current = false;
     failReasonRef.current = null;
   };
 
@@ -188,6 +197,42 @@ export default function GameScreen() {
     }
   }, [score, lastLevel]);
 
+  useEffect(() => {
+    if (gameStarted && !hasFailed && !videoErrorReceived.current) {
+      if (!isVideoPlaying) {
+        videoTimeoutRef.current = setTimeout(() => {
+          if (!videoErrorReceived.current && !isVideoPlaying) {
+            triggerFail('video_fail');
+          }
+        }, 5000);
+      }
+    }
+    return () => {
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+        videoTimeoutRef.current = null;
+      }
+    };
+  }, [gameStarted, hasFailed, isVideoPlaying]);
+
+  useEffect(() => {
+    if (!gameStarted || hasFailed) return;
+
+    if (!isConnected) {
+      if (internetLostStartTime.current === null) {
+        internetLostStartTime.current = Date.now();
+      }
+      const lostDuration = Date.now() - internetLostStartTime.current;
+      if (lostDuration > 2000) {
+        setInternetLostTriggered(true);
+        failReasonRef.current = 'internet_lost';
+        triggerFail('internet_lost');
+      }
+    } else {
+      internetLostStartTime.current = null;
+    }
+  }, [isConnected, gameStarted, hasFailed]);
+
   const startGame = async () => {
     const randomVideo = funnyVideos[Math.floor(Math.random() * funnyVideos.length)];
     setCurrentVideoId(randomVideo);
@@ -202,8 +247,10 @@ export default function GameScreen() {
       smileTriggered: false,
       eyesClosedTriggered: false,
       faceLostTriggered: false,
+      internetLostTriggered: false,
     });
     setSessionId(newSessionId);
+    setInternetLostTriggered(false);
     
     setGameStarted(true);
     setScore(0);
@@ -211,6 +258,9 @@ export default function GameScreen() {
     warningStartTime.current = null;
     eyesClosedStartTime.current = null;
     outOfViewStartTime.current = null;
+    internetLostStartTime.current = null;
+    videoTimeoutRef.current = null;
+    videoErrorReceived.current = false;
     failReasonRef.current = null;
     setFaceState('detected');
   };
@@ -255,7 +305,10 @@ export default function GameScreen() {
         }
 
         if (sessionId) {
-          await sessionService.endSession(sessionId, score, false, failReason);
+          await sessionService.endSession(sessionId, score, false, failReason, {
+            ...(failReason === 'internet_lost' && { internetLostTriggered: true }),
+            ...(failReason === 'video_fail' && { videoLoadFailureTriggered: true }),
+          });
         }
       } catch (error) {
         console.error('Error saving score:', error);
@@ -273,10 +326,20 @@ export default function GameScreen() {
 
   const onYouTubeChangeState = (state: string) => {
     if (state === 'playing') {
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+        videoTimeoutRef.current = null;
+      }
+      videoErrorReceived.current = false;
       setIsVideoPlaying(true);
     } else if (state === 'paused' || state === 'ended') {
       setIsVideoPlaying(false);
     }
+  };
+
+  const onYouTubeError = (reason: string) => {
+    videoErrorReceived.current = true;
+    triggerFail('video_fail');
   };
 
   const renderChecklistItem = (label: string, checked: boolean) => {
@@ -385,6 +448,7 @@ export default function GameScreen() {
         videoId={currentVideoId}
         style={StyleSheet.absoluteFill}
         onStateChange={onYouTubeChangeState}
+        onError={onYouTubeError}
       />
 
       <View className="absolute top-12 left-5 bg-overlay-black p-4 rounded-xl border-2 border-neon-yellow">
@@ -392,6 +456,12 @@ export default function GameScreen() {
         <Text className="text-xs font-bold text-neon-yellow">POINTS</Text>
         {lastLevel > 0 && <Text className="text-sm font-bold text-neon-cyan mt-1">LVL {lastLevel}</Text>}
       </View>
+
+      {!isConnected && (
+        <View className="absolute top-24 left-5 bg-warning-red p-2 rounded-xl">
+          <Text className="text-xs font-bold text-white">NO INTERNET</Text>
+        </View>
+      )}
 
       <View className="absolute top-12 right-5 w-28 h-24 border-2 border-neon-cyan rounded-3xl overflow-hidden bg-black">
         <CameraView style={StyleSheet.absoluteFill} facing="front" />

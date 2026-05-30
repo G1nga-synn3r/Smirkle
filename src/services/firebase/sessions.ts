@@ -30,7 +30,8 @@ export const sessionService = {
     sessionId: string,
     score: number,
     completedSuccessfully: boolean,
-    failReason?: string
+    failReason?: string,
+    additionalData?: Partial<Session>
   ): Promise<void> => {
     const sessionRef = doc(db, 'sessions', sessionId);
     await updateDoc(sessionRef, {
@@ -38,6 +39,7 @@ export const sessionService = {
       score,
       completedSuccessfully,
       failReason: failReason || null,
+      ...additionalData,
     });
   },
 };

@@ -29,16 +29,23 @@ export default ({ config }) => ({
     },
     plugins: [
       [
+        'expo-build-properties',
+        {
+          android: {
+            minSdkVersion: 26, // Even though you want 28, set this to 26 to satisfy the library requirement
+          },
+        },
+      ],
+      [
         'react-native-vision-camera',
         {
-          cameraPermissionText: 'Allow Smirkle to access your camera for real-time face detection during gameplay.',
-          microphonePermissionText: 'Allow Smirkle to access microphone for potential gameplay features.',
+          cameraPermissionText: 'Allow Smirkle to access your camera...',
         },
       ],
       [
         'expo-camera',
         {
-          cameraPermission: 'Allow Smirkle to access your camera to detect smiles and smirks during gameplay.',
+          cameraPermission: 'Allow Smirkle to access your camera...',
         },
       ],
     ],

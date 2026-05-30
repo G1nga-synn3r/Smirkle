@@ -1,18 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import * as Haptics from 'expo-haptics';
 import { auth, db } from '../services/firebase/firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { getRandomApprovedVideo } from '../utils/videoService';
+import { getRandomGameVideo } from '../utils/videoService';
 import EmojiParticles from '../../components/EmojiParticles';
 import YouTubePlayer from '../../components/YouTubePlayer';
-import { colors } from '../../theme/colors';
+import { colors } from '../theme/colors';
 import { useFaceDetection } from '../hooks/useFaceDetection';
+import { sessionService } from '../services/firebase/sessions';
+import { useInternetConnectivity } from '../hooks/useInternetConnectivity';
 
 const { width, height } = Dimensions.get('window');
 
+const absoluteFill = { position: 'absolute' as const, left: 0, right: 0, top: 0, bottom: 0 };
+
 type FaceState = 'not_detected' | 'detected' | 'warning' | 'failed';
+type FailReason = 'smile' | 'eyes_closed' | 'face_lost' | 'manual_stop' | 'internet_lost' | 'video_fail';
 
 const GameScreen = ({ navigation }: any) => {
   const device = useCameraDevice('front');
@@ -30,7 +35,9 @@ const GameScreen = ({ navigation }: any) => {
   const eyesClosedStartTime = useRef<number | null>(null);
   const outOfViewStartTime = useRef<number | null>(null);
   const warningStartTime = useRef<number | null>(null);
-  const scoreIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const scoreIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const internetLostStartTime = useRef<number | null>(null);
 
   const [hasFailed, setHasFailed] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -38,17 +45,19 @@ const GameScreen = ({ navigation }: any) => {
   const [showParticles, setShowParticles] = useState(false);
   const [particleEmojis, setParticleEmojis] = useState<string[]>([]);
   const [lastLevel, setLastLevel] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [warningCount, setWarningCount] = useState(0);
+
+  const { isConnected } = useInternetConnectivity();
 
   const { faceData, frameProcessor } = useFaceDetection(!gameStarted || !hasFailed);
 
-  // Real face detection logic
   useEffect(() => {
     if (hasFailed) return;
 
     const { faceDetected, leftEyeOpenProbability, rightEyeOpenProbability, smilingProbability } = faceData;
 
     if (!gameStarted) {
-      // Before game: check for face detected, eyes open, neutral
       const eyesOpen = leftEyeOpenProbability > 0.5 && rightEyeOpenProbability > 0.5;
       const neutral = smilingProbability < 0.3;
 
@@ -58,7 +67,6 @@ const GameScreen = ({ navigation }: any) => {
         setFaceState('not_detected');
       }
     } else {
-      // During game: monitor for failures
       const eyesOpen = leftEyeOpenProbability > 0.5 && rightEyeOpenProbability > 0.5;
       const neutral = smilingProbability < 0.3;
 
@@ -72,6 +80,7 @@ const GameScreen = ({ navigation }: any) => {
         if (warningStartTime.current === null) {
           warningStartTime.current = Date.now();
         }
+        setWarningCount(prev => prev + 1);
         setFaceState('warning');
       } else {
         warningStartTime.current = null;
@@ -83,16 +92,10 @@ const GameScreen = ({ navigation }: any) => {
   useEffect(() => {
     if (!gameStarted || hasFailed) return;
 
-    const isWarning = isSmiling || (eyesClosed && !eyesClosedStartTime.current) || 
-                      (isOutOfView && !outOfViewStartTime.current);
-
-    if (isWarning && faceState === 'warning') {
-      if (warningStartTime.current) {
-        const warningDuration = Date.now() - warningStartTime.current;
-        
-        if (warningDuration > 2000 || (isSmiling && warningDuration > 500)) {
-          triggerFail();
-        }
+    const warningDuration = warningStartTime.current ? Date.now() - warningStartTime.current : 0;
+    if (faceState === 'warning' && warningDuration > 1000) {
+      if (isSmiling || eyesClosed || isOutOfView) {
+        triggerFail(isSmiling ? 'smile' : eyesClosed ? 'eyes_closed' : 'face_lost');
       }
     }
   }, [faceState, isSmiling, eyesClosed, isOutOfView, gameStarted, hasFailed]);
@@ -104,10 +107,9 @@ const GameScreen = ({ navigation }: any) => {
       if (eyesClosedStartTime.current === null) {
         eyesClosedStartTime.current = Date.now();
       }
-      
       const closedDuration = Date.now() - eyesClosedStartTime.current;
       if (closedDuration > 2000) {
-        triggerFail();
+        triggerFail('eyes_closed');
       }
     } else {
       eyesClosedStartTime.current = null;
@@ -121,10 +123,9 @@ const GameScreen = ({ navigation }: any) => {
       if (outOfViewStartTime.current === null) {
         outOfViewStartTime.current = Date.now();
       }
-      
       const outDuration = Date.now() - outOfViewStartTime.current;
       if (outDuration > 2000) {
-        triggerFail();
+        triggerFail('face_lost');
       }
     } else {
       outOfViewStartTime.current = null;
@@ -155,40 +156,60 @@ const GameScreen = ({ navigation }: any) => {
     }
   }, [score, lastLevel]);
 
+  useEffect(() => {
+    if (!gameStarted || hasFailed) return;
+
+    if (!isConnected) {
+      if (internetLostStartTime.current === null) {
+        internetLostStartTime.current = Date.now();
+      }
+      const lostDuration = Date.now() - internetLostStartTime.current;
+      if (lostDuration > 2000) {
+        triggerFail('internet_lost');
+      }
+    } else {
+      internetLostStartTime.current = null;
+    }
+  }, [isConnected, gameStarted, hasFailed]);
+
+  useEffect(() => {
+    if (gameStarted && !hasFailed && !isVideoPlaying) {
+      videoTimeoutRef.current = setTimeout(() => {
+        if (!isVideoPlaying) {
+          triggerFail('video_fail');
+        }
+      }, 5000);
+    }
+    return () => {
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+      }
+    };
+  }, [gameStarted, hasFailed, isVideoPlaying]);
+
   const startGame = async () => {
     try {
-      const video = await getRandomApprovedVideo();
-      const videoId = video ? ((video as any).youtubeVideoId || video.id) : 'dQw4w9WgXcQ';
+      const videoId = await getRandomGameVideo() || 'dQw4w9WgXcQ';
       setCurrentVideoId(videoId);
-      setGameStarted(true);
-      setScore(0);
-      warningStartTime.current = null;
     } catch (error) {
       console.error('Video load error:', error);
       setCurrentVideoId('dQw4w9WgXcQ');
-      setGameStarted(true);
-      setScore(0);
-      warningStartTime.current = null;
     }
+    setGameStarted(true);
+    setScore(0);
+    setWarningCount(0);
+    warningStartTime.current = null;
   };
 
-  const triggerFail = async () => {
+  const triggerFail = async (reason?: FailReason) => {
     if (!hasFailed) {
       setHasFailed(true);
       setFaceState('failed');
       setIsVideoPlaying(false);
-      
+
       if (scoreIntervalRef.current) {
         clearInterval(scoreIntervalRef.current);
       }
-
-      const hapticInterval = setInterval(() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      }, 300);
-
-      setTimeout(() => {
-        clearInterval(hapticInterval);
-      }, 3000);
 
       try {
         const user = auth.currentUser;
@@ -198,7 +219,6 @@ const GameScreen = ({ navigation }: any) => {
             const userData = userDoc.data();
             const currentHighScore = userData.sessionHighScore || 0;
             const currentLifetimeScore = userData.lifetimeScore || 0;
-            
             if (score > currentHighScore) {
               await updateDoc(doc(db, 'users', user.uid), {
                 sessionHighScore: score,
@@ -227,10 +247,18 @@ const GameScreen = ({ navigation }: any) => {
 
   const onYouTubeChangeState = (state: string) => {
     if (state === 'playing') {
+      if (videoTimeoutRef.current) {
+        clearTimeout(videoTimeoutRef.current);
+        videoTimeoutRef.current = null;
+      }
       setIsVideoPlaying(true);
     } else if (state === 'paused' || state === 'ended') {
       setIsVideoPlaying(false);
     }
+  };
+
+  const onYouTubeError = (_reason: string) => {
+    triggerFail('video_fail');
   };
 
   if (!hasPermission) {
@@ -242,36 +270,6 @@ const GameScreen = ({ navigation }: any) => {
         <View style={styles.warningContainer}>
           <Text style={styles.warningText}>REQUESTING CAMERA ACCESS...</Text>
         </View>
-      </View>
-    );
-  }
-
-  if (!hasPermission) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.title}>SMIRKLE</Text>
-        </View>
-        
-        <View style={styles.warningContainer}>
-          <Text style={styles.warningText}>CAMERA ACCESS REQUIRED</Text>
-          <Text style={styles.warningSubtext}>
-            Face detection is required to play
-          </Text>
-          <TouchableOpacity 
-            style={styles.retryButton}
-            onPress={requestCameraPermission}
-          >
-            <Text style={styles.retryButtonText}>GRANT ACCESS</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>GO BACK</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -290,15 +288,17 @@ const GameScreen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.faceDetectionContainer}>
-          <View style={styles.cameraPreview}>
-            <Camera
-              style={StyleSheet.absoluteFill}
-              device={device}
-              isActive={!hasFailed}
-              frameProcessor={frameProcessor}
-              onInitialized={() => setIsReady(true)}
-            />
-          </View>
+          {device && (
+            <View style={styles.cameraPreview}>
+              <Camera
+                style={absoluteFill}
+                device={device}
+                isActive={!hasFailed}
+                frameProcessor={frameProcessor}
+                onInitialized={() => setIsReady(true)}
+              />
+            </View>
+          )}
 
           <View style={[styles.checklistCard, allReady && { opacity: 0.3 }]}>
             <View style={styles.checklistItem}>
@@ -362,8 +362,9 @@ const GameScreen = ({ navigation }: any) => {
     <View style={styles.gameContainer}>
       <YouTubePlayer
         videoId={currentVideoId}
-        style={StyleSheet.absoluteFill}
+        style={absoluteFill}
         onStateChange={onYouTubeChangeState}
+        onError={onYouTubeError}
       />
       
       <View style={styles.scoreOverlay}>
@@ -372,24 +373,26 @@ const GameScreen = ({ navigation }: any) => {
         {lastLevel > 0 && <Text style={styles.levelText}>LVL {lastLevel}</Text>}
       </View>
 
-      <View style={styles.pipContainer}>
-        <Camera
-          style={StyleSheet.absoluteFill}
-          device={device}
-          isActive={!hasFailed}
-          frameProcessor={frameProcessor}
-        />
+      {device && (
+        <View style={styles.pipContainer}>
+          <Camera
+            style={absoluteFill}
+            device={device}
+            isActive={!hasFailed}
+            frameProcessor={frameProcessor}
+          />
 
-        {faceState === 'warning' && (
-          <View style={styles.warningBorder}>
-            <Text style={styles.warningBorderText}>
-              {isSmiling ? 'DON\'T SMILE!' :
-               eyesClosed ? 'OPEN YOUR EYES!' :
-               'STAY IN FRAME!'}
-            </Text>
-          </View>
-        )}
-      </View>
+          {faceState === 'warning' && (
+            <View style={styles.warningBorder}>
+              <Text style={styles.warningBorderText}>
+                {isSmiling ? 'DON\'T SMILE!' :
+                 eyesClosed ? 'OPEN YOUR EYES!' :
+                 'STAY IN FRAME!'}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
 
       <TouchableOpacity 
         style={styles.stopButton}
@@ -454,36 +457,6 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.neonCyan,
   },
-  detectionOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  detectionText: {
-    color: colors.errorRed,
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  detectionSubtext: {
-    color: colors.errorRed,
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  previewScoreContainer: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: colors.surface,
-    borderRadius: 10,
-  },
-  previewScoreLabel: {
-    color: colors.neonYellow,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   startButton: {
     marginTop: 30,
     backgroundColor: colors.neonCyan,
@@ -492,10 +465,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 3,
     borderColor: colors.neonMagenta,
-    shadowColor: colors.neonCyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
   },
   startButtonText: {
     color: colors.background,
@@ -541,7 +510,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   warningBorder: {
-    ...StyleSheet.absoluteFillObject,
+    ...absoluteFill,
     backgroundColor: colors.overlayWarning,
     justifyContent: 'center',
     alignItems: 'center',
@@ -623,41 +592,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  warningSubtext: {
-    color: colors.errorRed,
-    fontSize: 14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: 30,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 30,
-    backgroundColor: '#331111',
-    borderWidth: 2,
-    borderColor: colors.errorRed,
-  },
-  retryButtonText: {
-    color: colors.errorRed,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  backButton: {
-    marginVertical: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 50,
-    backgroundColor: colors.grayDark,
-    borderWidth: 1,
-    borderColor: colors.errorRed,
-    alignSelf: 'center',
-  },
-  backButtonText: {
-    color: colors.errorRed,
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
   checklistCard: {
     position: 'absolute',
     top: '50%',
@@ -696,7 +630,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  backButton: {
+    marginVertical: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 50,
+    backgroundColor: colors.grayDark,
+    borderWidth: 1,
+    borderColor: colors.errorRed,
+    alignSelf: 'center',
+  },
+  backButtonText: {
+    color: colors.errorRed,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
 });
 
 export default GameScreen;
-

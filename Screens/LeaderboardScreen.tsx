@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 
 type UserRank = {
@@ -40,16 +40,18 @@ const LeaderboardScreen = () => {
       );
 
       const snapshot = await getDocs(q);
-      const userData: UserRank[] = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          username: doc.data().username || 'Anonymous',
-          lifetimeScore: doc.data().lifetimeScore || 0,
-          sessionHighScore: doc.data().sessionHighScore || 0,
-        }))
-        .filter((user) => user.username && !user.username.toLowerCase().startsWith('guest_'));
+      const userData: UserRank[] = [];
 
-      setUsers(userData);
+      snapshot.forEach((docSnap: QueryDocumentSnapshot) => {
+        userData.push({
+          id: docSnap.id,
+          username: docSnap.data().username || 'Anonymous',
+          lifetimeScore: docSnap.data().lifetimeScore || 0,
+          sessionHighScore: docSnap.data().sessionHighScore || 0,
+        });
+      });
+
+      setUsers(userData.filter((user) => user.username && !user.username.toLowerCase().startsWith('guest_')));
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     } finally {
@@ -127,17 +129,13 @@ const LeaderboardScreen = () => {
           className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'session' ? 'bg-neon-cyan' : ''}`}
           onPress={() => { setActiveTab('session'); setShowTop1000(false); }}
         >
-          <Text className={`text-sm font-bold ${activeTab === 'session' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
-            HIGH SCORE
-          </Text>
+          <Text className={`text-sm font-bold ${activeTab === 'session' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>HIGH SCORE</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className={`flex-1 py-3 items-center rounded-xl ${activeTab === 'lifetime' ? 'bg-neon-cyan' : ''}`}
           onPress={() => { setActiveTab('lifetime'); setShowTop1000(false); }}
         >
-          <Text className={`text-sm font-bold ${activeTab === 'lifetime' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>
-            LIFETIME
-          </Text>
+          <Text className={`text-sm font-bold ${activeTab === 'lifetime' ? 'text-midnight-bg' : 'text-midnight-gray'}`}>LIFETIME</Text>
         </TouchableOpacity>
       </View>
 
@@ -186,7 +184,6 @@ const LeaderboardScreen = () => {
     </View>
   );
 };
-
 
 
 export default LeaderboardScreen;

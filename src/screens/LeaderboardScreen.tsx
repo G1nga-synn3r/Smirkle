@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../../firebase';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 const COLORS = {
   background: '#0a0a0a',
@@ -56,8 +56,9 @@ export default function LeaderboardScreen() {
 
       const querySnapshot = await getDocs(q);
       const leaderboard: LeaderboardUser[] = [];
+      let index = 0;
 
-      querySnapshot.forEach((doc: any, index: number) => {
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
         const data = doc.data();
         leaderboard.push({
           uid: doc.id,
@@ -67,6 +68,7 @@ export default function LeaderboardScreen() {
           level: data.level || 1,
           index: index + 1,
         });
+        index++;
       });
 
       if (type === 'session') {

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 
 const COLORS = {
   background: '#0a0a0a',
@@ -19,10 +19,17 @@ const COLORS = {
   neonMagenta: '#ff00ff',
 };
 
+interface SearchUser {
+  uid: string;
+  username: string;
+  profileImageUrl: string | null;
+  level: number;
+}
+
 export default function SearchScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,10 +49,10 @@ export default function SearchScreen() {
         where('isGuest', '==', false)
       );
       
-      const querySnapshot = await getDocs(q);
-      const foundUsers = [];
-      
-      querySnapshot.forEach((doc) => {
+const querySnapshot = await getDocs(q);
+      const foundUsers: SearchUser[] = [];
+
+      querySnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
         const data = doc.data();
         foundUsers.push({
           uid: doc.id,
@@ -54,7 +61,7 @@ export default function SearchScreen() {
           level: data.level || 0,
         });
       });
-      
+
       setUsers(foundUsers);
     } catch (err) {
       console.error('Error searching users:', err);
@@ -64,7 +71,7 @@ export default function SearchScreen() {
     }
   };
 
-  const handleSelectUser = (userUid) => {
+  const handleSelectUser = (userUid: string) => {
     navigation.navigate('Profile', { userId: userUid });
   };
 
@@ -102,10 +109,10 @@ export default function SearchScreen() {
       ) : (
         <View style={styles.resultsContainer}>
           {users.length > 0 ? (
-            <FlatList
-              data={users}
-              keyExtractor={(item) => item.uid}
-              renderItem={({ item }) => (
+<FlatList
+               data={users}
+               keyExtractor={(item: SearchUser) => item.uid}
+               renderItem={({ item }: { item: SearchUser }) => (
                 <TouchableOpacity
                   style={styles.userCard}
                   onPress={() => handleSelectUser(item.uid)}

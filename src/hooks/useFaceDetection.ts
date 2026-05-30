@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFrameProcessor } from 'react-native-vision-camera';
-import { runOnJS } from 'react-native-reanimated';
-import {
-  detectFaces,
-  type FaceDetectionResult,
-} from 'react-native-vision-camera-face-detector';
+import { useFaceDetector } from 'react-native-vision-camera-face-detector';
+import { runAsync, Worklets } from 'react-native-worklets';
 
 export interface FaceDetectionData {
   faceDetected: boolean;
@@ -21,33 +18,45 @@ export const useFaceDetection = (isActive: boolean) => {
     smilingProbability: 0,
   });
 
+  const { detectFaces, stopListeners } = useFaceDetector();
+
+  useEffect(() => {
+    return () => {
+      stopListeners();
+    };
+  }, [stopListeners]);
+
+  const handleDetectedFaces = Worklets.createRunOnJS((faces: any[]) => {
+    if (faces && faces.length > 0) {
+      const face = faces[0];
+      setFaceData({
+        faceDetected: true,
+        leftEyeOpenProbability: face.leftEyeOpenProbability ?? 0,
+        rightEyeOpenProbability: face.rightEyeOpenProbability ?? 0,
+        smilingProbability: face.smilingProbability ?? 0,
+      });
+    } else {
+      setFaceData({
+        faceDetected: false,
+        leftEyeOpenProbability: 0,
+        rightEyeOpenProbability: 0,
+        smilingProbability: 0,
+      });
+    }
+  });
+
   const frameProcessor = useFrameProcessor(
     (frame) => {
       'worklet';
       if (!isActive) return;
 
-      const faces = detectFaces(frame);
-
-      runOnJS(() => {
-        if (faces.length > 0) {
-          const face = faces[0]; // Take the first face
-          setFaceData({
-            faceDetected: true,
-            leftEyeOpenProbability: face.leftEyeOpenProbability ?? 0,
-            rightEyeOpenProbability: face.rightEyeOpenProbability ?? 0,
-            smilingProbability: face.smilingProbability ?? 0,
-          });
-        } else {
-          setFaceData({
-            faceDetected: false,
-            leftEyeOpenProbability: 0,
-            rightEyeOpenProbability: 0,
-            smilingProbability: 0,
-          });
-        }
-      })();
+      runAsync(frame, () => {
+        'worklet';
+        const faces = detectFaces(frame);
+        handleDetectedFaces(faces);
+      });
     },
-    [isActive]
+    [isActive, detectFaces, handleDetectedFaces]
   );
 
   return { faceData, frameProcessor };

@@ -1,21 +1,19 @@
-import { getRandomApprovedVideo } from '../utils/videoService';
-import type { Video } from '../types/video';
+import { getRandomGameVideo } from '../../utils/videoService';
 
 /**
  * Video selection service for gameplay
  */
 export const videoSelectorService = {
   /**
-   * Get random video for gameplay, with keyword pool fallback if needed
+   * Get random video ID for gameplay, with fallback if API fails
    */
-  getRandomGameVideo: async (): Promise<string> => {
-    const video = await getRandomApprovedVideo();
-    if (video) {
-      return video.youtubeVideoId || video.id;
+  getRandomGameVideoId: async (): Promise<string> => {
+    const videoId = await getRandomGameVideo();
+    if (videoId) {
+      return videoId;
     }
-    // Fallback keyword pools (future API fetch stub)
-    const fallbackVideos = ['dQw4w9WgXcQ', 'jNQXAC9IVRw'];
+    // Fallback keyword pools
+    const fallbackVideos = ['dQw4w9WgXcQ', 'jNQXAC9IVRw', '3tmd-ClpJxA', '9bZkp7q19f0'];
     return fallbackVideos[Math.floor(Math.random() * fallbackVideos.length)];
   },
 };
-

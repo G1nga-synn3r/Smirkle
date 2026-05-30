@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { ImageSourcePropType } from 'react-native';
 import tutorialFlowchart from '../../assets/tutorial_flowchart.png';
 
 interface TutorialOverlayProps {

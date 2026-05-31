@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { useCameraPermission } from 'react-native-vision-camera';
 import { authService } from '../../services/firebase/auth';
 import { auth } from '../../services/firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -18,6 +19,8 @@ export default function AuthEntry() {
   const [tutorialComplete, setTutorialComplete] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSignup, setShowSignup] = useState(false);
+  const [pendingPostSignup, setPendingPostSignup] = useState(false);
+  const { hasPermission, requestPermission } = useCameraPermission();
 
   useEffect(() => {
     const loadTutorialState = async () => {
@@ -41,14 +44,11 @@ export default function AuthEntry() {
     const unsubscribe = onAuthStateChanged(auth, user => {
       if (user) {
         setIsAuthenticated(true);
-        if (tutorialComplete) {
-          router.replace('/(tabs)');
-          return;
-        }
-        setShowTutorial(true);
+        setPendingPostSignup(true);
       } else {
         setIsAuthenticated(false);
         setShowTutorial(false);
+        setPendingPostSignup(false);
       }
       setLoading(false);
     });
@@ -56,17 +56,46 @@ export default function AuthEntry() {
     return unsubscribe;
   }, [router, tutorialComplete]);
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await authService.login(email, password);
-      setIsAuthenticated(true);
+  useEffect(() => {
+    if (!pendingPostSignup || !isAuthenticated) {
+      return;
+    }
 
+    if (hasPermission) {
+      setPendingPostSignup(false);
       if (tutorialComplete) {
         router.replace('/(tabs)');
         return;
       }
-
       setShowTutorial(true);
+      return;
+    }
+
+    (async () => {
+      const granted = await requestPermission();
+      setPendingPostSignup(false);
+
+      if (granted) {
+        if (tutorialComplete) {
+          router.replace('/(tabs)');
+          return;
+        }
+        setShowTutorial(true);
+      } else {
+        if (tutorialComplete) {
+          router.replace('/(tabs)');
+          return;
+        }
+        setShowTutorial(true);
+      }
+    })();
+  }, [pendingPostSignup, isAuthenticated, hasPermission, tutorialComplete, router, requestPermission]);
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await authService.login(email, password);
+      setIsAuthenticated(true);
+      setPendingPostSignup(true);
     } catch (error: any) {
       Alert.alert('Login failed', error?.message || 'Unable to sign in.');
       throw error;
@@ -77,13 +106,7 @@ export default function AuthEntry() {
     try {
       await authService.guestLogin();
       setIsAuthenticated(true);
-
-      if (tutorialComplete) {
-        router.replace('/(tabs)');
-        return;
-      }
-
-      setShowTutorial(true);
+      setPendingPostSignup(true);
     } catch (error: any) {
       Alert.alert('Guest login failed', error?.message || 'Unable to sign in as guest.');
       throw error;
@@ -95,13 +118,7 @@ export default function AuthEntry() {
       await authService.register(email, password);
       setIsAuthenticated(true);
       setShowSignup(false);
-
-      if (tutorialComplete) {
-        router.replace('/(tabs)');
-        return;
-      }
-
-      setShowTutorial(true);
+      setPendingPostSignup(true);
     } catch (error: any) {
       Alert.alert('Sign up failed', error?.message || 'Unable to create account.');
       throw error;

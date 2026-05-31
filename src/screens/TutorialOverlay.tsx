@@ -2,14 +2,10 @@ import React from 'react';
 import {
   View,
   ScrollView,
-  Image,
   TouchableOpacity,
   Text,
   StyleSheet,
-  Dimensions,
 } from 'react-native';
-import { ImageSourcePropType } from 'react-native';
-import tutorialFlowchart from '../../assets/tutorial_flowchart.png';
 
 interface TutorialOverlayProps {
   onComplete: () => void;
@@ -19,34 +15,58 @@ export default function TutorialOverlay({ onComplete }: TutorialOverlayProps) {
   return (
     <View style={styles.overlay}>
       <View style={styles.container}>
-        <Text style={styles.title}>Tutorial</Text>
-        <Text style={styles.subtitle}>
-          Learn the circular flow before you jump into the game.
-        </Text>
+        <Text style={styles.title}>😎 Welcome to Smirkle! 🎮</Text>
 
         <ScrollView
+          showsVerticalScrollIndicator={true}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
         >
-          <View style={styles.imageWrapper}>
-            <Image
-              source={tutorialFlowchart}
-              style={styles.image}
-              resizeMode="contain"
-            />
-          </View>
+          <Text style={styles.section}>
+            <Text style={styles.bold}>Smirkle is the high-energy "try not to laugh" challenge!</Text>
+            {'\n\n'}
+            Watch random funny YouTube videos while the front camera monitors your face.
+          </Text>
+
+          <Text style={styles.section}>
+            <Text style={styles.bold}>How to Play:</Text>
+            {'\n'}
+            • Get face lock: Eyes open, neutral face, front camera only.
+            {'\n'}
+            • Start - survive to score +111 points per second!
+            {'\n'}
+            • PiP camera overlay tracks you.
+            {'\n\n'}
+            <Text style={styles.bold}>Fail Conditions (instant end):</Text>
+            {'\n'}
+            • Smile detected (threshold: 0.60)
+            {'\n'}
+            • Eyes closed more than 2 seconds
+            {'\n'}
+            • Face leaves frame/obscured
+            {'\n'}
+            • Internet lost/video fail
+          </Text>
+
+          <Text style={styles.section}>
+            <Text style={styles.bold}>Controls:</Text>
+            {'\n'}
+            • No pause/skip/rewind - pure challenge!
+            {'\n'}
+            • Warnings flash if close to fail (neon red border).
+            {'\n'}
+            • Save high scores, climb leaderboards.
+          </Text>
+
+          <Text style={styles.footer}>Good luck! 💀</Text>
         </ScrollView>
 
         <TouchableOpacity style={styles.ctaButton} onPress={onComplete}>
-          <Text style={styles.ctaText}>Got it!</Text>
+          <Text style={styles.ctaText}>GOT IT! Let&apos;s Play 😎</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   overlay: {
@@ -74,40 +94,38 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
   title: {
-    color: '#00ffea',
-    fontSize: 28,
+    color: '#ff00ff',
+    fontSize: 32,
     fontWeight: '900',
     textAlign: 'center',
     marginTop: 24,
-  },
-  subtitle: {
-    color: '#cbd5e1',
-    textAlign: 'center',
-    fontSize: 15,
-    marginHorizontal: 24,
-    marginTop: 12,
-    marginBottom: 18,
-    lineHeight: 22,
+    textShadowColor: '#00ffea',
+    textShadowRadius: 15,
   },
   scrollContent: {
     paddingBottom: 24,
-    alignItems: 'center',
+    paddingHorizontal: 24,
   },
-  imageWrapper: {
-    width: width - 64,
-    maxWidth: 680,
-    height: (width - 64) * 0.95,
-    backgroundColor: '#020617',
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: '#334155',
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
+  section: {
+    color: '#ffff00',
+    fontSize: 16,
+    lineHeight: 24,
+    marginBottom: 15,
+    textShadowColor: '#ffff00',
+    textShadowRadius: 8,
   },
-  image: {
-    width: '100%',
-    height: '100%',
+  bold: {
+    fontWeight: '900',
+    color: '#00ffea',
+  },
+  footer: {
+    color: '#00ffea',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 10,
+    textShadowColor: '#00ffea',
+    textShadowRadius: 5,
   },
   ctaButton: {
     margin: 18,
@@ -116,10 +134,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#ff00ff',
   },
   ctaText: {
     color: '#050816',
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 2,
   },
 });

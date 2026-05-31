@@ -8,6 +8,7 @@ import { auth } from '../../services/firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import LoginScreen from '../../screens/LoginScreen';
 import SignupScreen from '../../screens/SignupScreen';
+import GuestGateScreen from '../../screens/GuestGateScreen';
 import TutorialOverlay from '../../screens/TutorialOverlay';
 
 const TUTORIAL_STORAGE_KEY = '@smirkle_tutorial_complete';
@@ -19,6 +20,7 @@ export default function AuthEntry() {
   const [tutorialComplete, setTutorialComplete] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSignup, setShowSignup] = useState(false);
+  const [showGuestGate, setShowGuestGate] = useState(false);
   const [pendingPostSignup, setPendingPostSignup] = useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
 
@@ -37,24 +39,18 @@ export default function AuthEntry() {
   }, []);
 
   useEffect(() => {
-    if (tutorialComplete === null) {
-      return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, user => {
       if (user) {
         setIsAuthenticated(true);
         setPendingPostSignup(true);
       } else {
         setIsAuthenticated(false);
-        setShowTutorial(false);
-        setPendingPostSignup(false);
       }
       setLoading(false);
     });
 
     return unsubscribe;
-  }, [router, tutorialComplete]);
+  }, [router]);
 
   useEffect(() => {
     if (!pendingPostSignup || !isAuthenticated) {
@@ -92,6 +88,7 @@ export default function AuthEntry() {
   }, [pendingPostSignup, isAuthenticated, hasPermission, tutorialComplete, router, requestPermission]);
 
   const handleLogin = async (email: string, password: string) => {
+    setLoading(true);
     try {
       await authService.login(email, password);
       setIsAuthenticated(true);
@@ -99,29 +96,36 @@ export default function AuthEntry() {
     } catch (error: any) {
       Alert.alert('Login failed', error?.message || 'Unable to sign in.');
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleGuestLogin = async () => {
+  const handleGuestFromGate = async (birthdate: Date) => {
+    setLoading(true);
     try {
-      await authService.guestLogin();
+      await authService.guestLogin(birthdate);
       setIsAuthenticated(true);
       setPendingPostSignup(true);
     } catch (error: any) {
       Alert.alert('Guest login failed', error?.message || 'Unable to sign in as guest.');
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSignUp = async (email: string, password: string) => {
+  const handleSignUp = async (email: string, password: string, username: string, birthdate: Date) => {
+    setLoading(true);
     try {
-      await authService.register(email, password);
+      await authService.register(email, password, username, birthdate);
       setIsAuthenticated(true);
       setShowSignup(false);
       setPendingPostSignup(true);
     } catch (error: any) {
       Alert.alert('Sign up failed', error?.message || 'Unable to create account.');
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,14 +162,23 @@ export default function AuthEntry() {
     );
   }
 
+  if (showGuestGate) {
+    return (
+      <GuestGateScreen
+        onConfirmAge={handleGuestFromGate}
+        onBackToLogin={() => setShowGuestGate(false)}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       {!isAuthenticated && !showSignup && (
         <LoginScreen
           onLogin={handleLogin}
-          onGuestLogin={handleGuestLogin}
           onForgotPassword={handleForgotPassword}
           onSwitchToSignup={() => setShowSignup(true)}
+          onShowGuestGate={() => setShowGuestGate(true)}
         />
       )}
       {!isAuthenticated && showSignup && (

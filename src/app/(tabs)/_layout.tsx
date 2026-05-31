@@ -1,5 +1,4 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // For icons, or use emoji labels
 import { colors } from '../../theme/colors';
 
 export default function TabLayout() {
@@ -28,7 +27,7 @@ export default function TabLayout() {
         name="index" 
         options={{ 
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '🏠',
         }} 
       />
@@ -36,7 +35,7 @@ export default function TabLayout() {
         name="search" 
         options={{ 
           title: 'Search',
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '🔍',
         }} 
       />
@@ -44,7 +43,7 @@ export default function TabLayout() {
         name="friends" 
         options={{ 
           title: 'Friends',
-          tabBarIcon: ({ color }) => <Ionicons name="people" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '👥',
         }} 
       />
@@ -52,7 +51,7 @@ export default function TabLayout() {
         name="leaderboard" 
         options={{ 
           title: 'Leaderboard',
-          tabBarIcon: ({ color }) => <Ionicons name="trophy" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '🏆',
         }} 
       />
@@ -60,7 +59,7 @@ export default function TabLayout() {
         name="profile" 
         options={{ 
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '👤',
         }} 
       />
@@ -68,11 +67,10 @@ export default function TabLayout() {
         name="settings" 
         options={{ 
           title: 'Settings',
-          tabBarIcon: ({ color }) => <Ionicons name="settings" size={24} color={color} />,
+          tabBarIcon: () => null,
           tabBarLabel: '⚙️',
         }} 
       />
     </Tabs>
   );
 }
-

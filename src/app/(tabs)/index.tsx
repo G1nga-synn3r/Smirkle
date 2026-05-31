@@ -1,3 +1,3 @@
-import GameScreen from '../../screens/GameScreen';
-export default GameScreen;
+import HomeScreen from '../../screens/HomeScreen';
+export default HomeScreen;
 

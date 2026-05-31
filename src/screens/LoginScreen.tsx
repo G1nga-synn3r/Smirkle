@@ -13,12 +13,12 @@ import {
 
 interface LoginScreenProps {
   onLogin: (email: string, password: string) => Promise<void>;
-  onGuestLogin: () => Promise<void>;
   onForgotPassword: (email: string) => Promise<void>;
   onSwitchToSignup: () => void;
+  onShowGuestGate: () => void;
 }
 
-export default function LoginScreen({ onLogin, onGuestLogin, onForgotPassword, onSwitchToSignup }: LoginScreenProps) {
+export default function LoginScreen({ onLogin, onForgotPassword, onSwitchToSignup, onShowGuestGate }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,25 +32,8 @@ export default function LoginScreen({ onLogin, onGuestLogin, onForgotPassword, o
     }
   };
 
-  const handleGuest = () => {
-    Alert.alert(
-      'Guest access age confirmation',
-      'Guest login is available for users 14 years or older. Continue as a guest?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'I am 14+',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await onGuestLogin();
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ],
-    );
+  const handleForgotPassword = () => {
+    onForgotPassword(email);
   };
 
   return (
@@ -99,7 +82,7 @@ export default function LoginScreen({ onLogin, onGuestLogin, onForgotPassword, o
         <Text style={styles.orText}>or continue with</Text>
 
         <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Google Sign-In', 'Coming soon!')} disabled={loading}>
+          <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Google', 'Google Sign-In - configure client IDs in .env')} disabled={loading}>
             <Text style={styles.socialButtonText}>Google</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Apple Sign-In', 'Coming soon!')} disabled={loading}>
@@ -107,11 +90,11 @@ export default function LoginScreen({ onLogin, onGuestLogin, onForgotPassword, o
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleGuest} disabled={loading}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={onShowGuestGate} disabled={loading}>
           <Text style={styles.secondaryButtonText}>Continue as guest</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => onForgotPassword(email)} disabled={loading}>
+        <TouchableOpacity style={styles.forgotPasswordButton} onPress={handleForgotPassword} disabled={loading}>
           <Text style={styles.forgotPasswordText}>Forgot password?</Text>
         </TouchableOpacity>
 
